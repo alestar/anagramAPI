@@ -53,10 +53,7 @@ public class Controller {
     @GetMapping("/anagrams/{word}.json")
     public @ResponseBody ResponseEntity<String> fetchAnagramWords(@PathVariable(value = "word") String word, @RequestParam(defaultValue="-1", required = false) Integer limit,
                                                                     @RequestParam (defaultValue="true", required = false)Boolean permitPN){
-        Set<String> result;
-        logger.info("Passing param limit: " + limit);
-        logger.info("Passing param permitPN: " + permitPN);
-        result = anagramService.fetchAnagramsOfWord(word, limit, permitPN);//Return All
+        Set<String> result = anagramService.fetchAnagramsOfWord(word, limit, permitPN);//Return All
 
         if(result == null) {
             return new ResponseEntity<>("Unexpected response code", HttpStatus.OK);

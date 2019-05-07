@@ -126,22 +126,28 @@ public class AnagramService {
         }
         else {
             words = tokenToWordsMap.get(generateAnagramToken(word));
-            if (limit == -1) {
-                if (permitPN) {
-                    return tokenToWordsMap.get(generateAnagramToken(word));//Return all
-                } else {
-                    for (String w : words) {
-                        if (Character.isLowerCase(w.charAt(0))) {// Only add lower case
-                            result.add(w);
+            if(words == null || words.isEmpty()){
+                return result;
+            }
+            else {
+                if (limit == -1) {
+                    if (permitPN) {
+                        result = tokenToWordsMap.get(generateAnagramToken(word));
+                        result.remove(word);//Return all, but the word passed as param
+                    } else {
+                        for (String w : words) {
+                            if (!w.equals(word) && Character.isLowerCase(w.charAt(0))) {// Only add lower case
+                                result.add(w);
+                            }
                         }
                     }
-                }
-            } else {// A valid limit number is pass
-                for (String w : words) {
-                    if ((Character.isLowerCase(w.charAt(0)) || permitPN)) {
-                        result.add(w);
-                        if (result.size() >= limit)
-                            break;
+                } else {// A valid limit number is pass
+                    for (String w : words) {
+                        if ((!w.equals(word) && Character.isLowerCase(w.charAt(0)) || permitPN)) {
+                            result.add(w);
+                            if (result.size() >= limit)
+                                break;
+                        }
                     }
                 }
             }
