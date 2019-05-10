@@ -2,8 +2,11 @@ package com.anagrams.project.service;
 
 import com.anagrams.project.exception.IncorrectAnagramException;
 import com.anagrams.project.model.StatsResource;
+import com.anagrams.project.repository.AnagramRepository;
 import com.anagrams.project.util.Stats;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.logging.Logger;
@@ -11,8 +14,12 @@ import java.util.logging.Logger;
 /**
  * Created by Alestar on 4/29/2019.
  */
-@Component
+@Service
 public class AnagramService {
+
+    @Autowired
+    AnagramRepository anagramRepository;
+
     private static Logger logger= Logger.getLogger(AnagramService.class.getName());
     private Stats stats= new Stats();
     private Map<Integer,Set<String>> lengthToTokensMap= new HashMap<>();
@@ -91,6 +98,8 @@ public class AnagramService {
         }
         stats.incrementTotalWords();// Increment by total amount of word
         stats.updateMostAnagramWords(tokenToWordsMap.get(token).size(),token);//update the MostAnagramWords counter and token correspondingly
+
+
 
     }
 
