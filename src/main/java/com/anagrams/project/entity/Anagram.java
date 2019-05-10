@@ -46,6 +46,14 @@ public class Anagram {
         this.length = length;
     }
 
+    public String getWords() {
+        return words;
+    }
+
+    public void setWords(String words) {
+        this.words = words;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -53,11 +61,12 @@ public class Anagram {
         Anagram anagram = (Anagram) o;
         return Objects.equals(id, anagram.id) &&
                 Objects.equals(token, anagram.token) &&
-                Objects.equals(length, anagram.length);
+                Objects.equals(length, anagram.length) &&
+                Objects.equals(words, anagram.words);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, token, length);
+        return Objects.hash(id, token, length, words);
     }
 }

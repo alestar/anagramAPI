@@ -3,9 +3,10 @@ package com.anagrams.project.controller;
 import com.anagrams.project.exception.IncorrectAnagramException;
 import com.anagrams.project.model.AnagramGet;
 import com.anagrams.project.model.AnagramPost;
-import com.anagrams.project.model.StatsResource;
-import com.anagrams.project.service.AnagramLoader;
+import com.anagrams.project.model.StatsModel;
 import com.anagrams.project.service.AnagramService;
+import com.anagrams.project.service.DataloaderService;
+import com.anagrams.project.service.StatsService;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -24,17 +26,24 @@ public class Controller {
     private AnagramService anagramService;
 
     @Autowired
-    private AnagramLoader anagramLoader;
+    private StatsService statsService;
+
+    @Autowired
+    private DataloaderService dataloaderService;
 
     @PostMapping("/words.json")
     public @ResponseBody ResponseEntity<String> addWordsAsAnagram(@RequestBody AnagramPost anagramPost){
 
         try {
-            anagramService.addWordsAsAnagram(anagramPost.getWords());
+            boolean success = anagramService.addWordsAsAnagram(anagramPost.getWords());
+            if (!success){
+                return new ResponseEntity<>("The word already exists", HttpStatus.BAD_REQUEST);
+            }
         }
         catch (IncorrectAnagramException e){
                 return new ResponseEntity<>(e.getMessage(),HttpStatus.BAD_REQUEST);
         }
+
         return new ResponseEntity<>("List of words has been added to the corpus", HttpStatus.CREATED);
     }
 
@@ -54,11 +63,11 @@ public class Controller {
         }
     }
 
-    @PostMapping("/ingest/words.json")
-    public @ResponseBody ResponseEntity<String> ingestWords(){
+    @PostMapping("/populate/words.json")
+    public @ResponseBody ResponseEntity<String> populateWords(){
 
         try {
-            anagramLoader.init();// to re-ingest the dic file
+            dataloaderService.init();// to re-ingest the dic file
         }
         catch (Exception e){
             return new ResponseEntity<>(e.getMessage(),HttpStatus.BAD_REQUEST);
@@ -70,14 +79,14 @@ public class Controller {
     @GetMapping("/anagrams/{word}.json")
     public @ResponseBody ResponseEntity<String> fetchAnagramWords(@PathVariable(value = "word") String word, @RequestParam(defaultValue="0", required = false) Integer limit,
                                                                     @RequestParam (defaultValue="true", required = false)Boolean permitPN){
-        Set<String> result = anagramService.fetchAnagramsOfWord(word, limit, permitPN);//Return All
+        List<String> result = anagramService.fetchAnagramsOfWord(word, limit, permitPN);//Return All
 
         if(result == null) {
             return new ResponseEntity<>("Unexpected response code", HttpStatus.OK);
         }
         else {
             Gson gson = new Gson();
-            AnagramGet anagramGet =  new AnagramGet(new ArrayList<>(result));
+            AnagramGet anagramGet =  new AnagramGet(result);
             return new ResponseEntity<>(gson.toJson(anagramGet), HttpStatus.OK);
         }
     }
@@ -85,14 +94,14 @@ public class Controller {
     @GetMapping("/stats/words.json")
     public @ResponseBody ResponseEntity<String> fetchStats(){
 
-        StatsResource statsResource=anagramService.fetchStatsResource();
+        StatsModel statsModel =statsService.calculateStats();
 
-        if(statsResource == null) {
+        if(statsModel == null) {
             return new ResponseEntity<>("Unexpected response code", HttpStatus.NO_CONTENT);
         }
         else {
             Gson gson = new Gson();
-            return new ResponseEntity<>(gson.toJson(statsResource), HttpStatus.OK);
+            return new ResponseEntity<>(gson.toJson(statsModel), HttpStatus.OK);
         }
     }
 

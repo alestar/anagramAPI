@@ -6,7 +6,7 @@ public class IncorrectAnagramException extends Exception {
     private String word;
 
 
-    public IncorrectAnagramException(String word){
+    public IncorrectAnagramException(){
         this.word = word;
     }
     @Override

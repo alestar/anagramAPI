@@ -1,11 +1,12 @@
 package com.anagrams.project.service;
 
+import com.anagrams.project.entity.Anagram;
 import com.anagrams.project.exception.IncorrectAnagramException;
-import com.anagrams.project.model.StatsResource;
+import com.anagrams.project.mapper.EntityMapper;
+import com.anagrams.project.model.StatsModel;
 import com.anagrams.project.repository.AnagramRepository;
-import com.anagrams.project.util.Stats;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -20,27 +21,17 @@ public class AnagramService {
     @Autowired
     AnagramRepository anagramRepository;
 
+    @Autowired
+    EntityMapper entityMapper;
+
+    @Autowired
+    StatsService statsService;
+
     private static Logger logger= Logger.getLogger(AnagramService.class.getName());
-    private Stats stats= new Stats();
-    private Map<Integer,Set<String>> lengthToTokensMap= new HashMap<>();
-    private Map<String,Set<String>> tokenToWordsMap= new HashMap<>();
 
     public AnagramService(){}
 
-    //-------------------------------------------------------------------------------------------------------------------
-    //                                          GETTERS
-    //-------------------------------------------------------------------------------------------------------------------
-    public Stats getStats() {
-        return stats;
-    }
 
-    public Map<Integer, Set<String>> getLengthToTokensMap() {
-        return lengthToTokensMap;
-    }
-
-    public Map<String, Set<String>> getTokenToWordsMap() {
-        return tokenToWordsMap;
-    }
 
     //-------------------------------------------------------------------------------------------------------------------
     //                                          TOKEN
@@ -68,53 +59,14 @@ public class AnagramService {
      * @param word to be added to respective anagrams in data tore
      * @throws IncorrectAnagramException for word not being a valid input
      */
-    private void addWordAsAnagram(String word) throws IncorrectAnagramException {
 
-        if(word == null || word.isEmpty()){
-            throw new IncorrectAnagramException(word);
-        }
-
-        String token = generateAnagramToken(word);
-        int length = word.length();
-        //First add the token to the length-tokens map
-        if(lengthToTokensMap.containsKey(length)){
-            lengthToTokensMap.get(length).add(token);
-        }
-        else{
-            Set<String> tokens= new HashSet<>();
-            tokens.add(token);
-            lengthToTokensMap.put(length, tokens);
-            stats.addToSumWordLengths(length);// Add new length to the sum (for calculating average)
-
-        }
-        //Second, add the word to the token-words map
-        if(tokenToWordsMap.containsKey(token)){
-            tokenToWordsMap.get(token).add(word);
-        }
-        else{
-            Set<String> words= new HashSet<>();
-            words.add(word);
-            tokenToWordsMap.put(token, words);
-        }
-        stats.incrementTotalWords();// Increment by total amount of word
-        stats.updateMostAnagramWords(tokenToWordsMap.get(token).size(),token);//update the MostAnagramWords counter and token correspondingly
-
-
-
-    }
 
     /**
      * Add list of words as anagrams
      * @param words List to add as anagrams
      * @throws IncorrectAnagramException to be handle when a word is invalid
      */
-    public void addWordsAsAnagram(List<String> words) throws IncorrectAnagramException{
-        for(String w: words){
-            addWordAsAnagram(w);
-        }
-        logger.info("The lengthToTokensMap: " + lengthToTokensMap.toString() );
-        logger.info("The tokenToWordsMap: " + tokenToWordsMap.toString() );
-    }
+
 
     //-------------------------------------------------------------------------------------------------------------------
     //                                          FETCH
@@ -126,16 +78,18 @@ public class AnagramService {
      * @param limit used to determine how many words would be returned in result, if -1 or bigger than available words return ALL
      * @return Set of anagrams word if available, otherwise return NULL
      */
-    public Set<String> fetchAnagramsOfWord(String word, int limit, boolean permitPN){// limit resultSet
+    public List<String> fetchAnagramsOfWord(String word, int limit, boolean permitPN){// limit resultSet
         logger.info("fetching anagram with limit = " + limit);
         logger.info("fetching anagram with permitPN = " + permitPN);
 
-        Set<String> result = new HashSet<>();
-        Set<String> words;
-        if (word == null || word.isEmpty() || tokenToWordsMap == null || tokenToWordsMap.isEmpty() || limit<0) //If the word is invalid or map is empty (i.e after deletion) short circuit exit
+        List<String> result = new ArrayList<>();
+        List<String> words;
+        if (word == null || word.isEmpty() || limit<0) //If the word is invalid or map is empty (i.e after deletion) short circuit exit
             return result;
 
-        words = tokenToWordsMap.get(generateAnagramToken(word));
+        Anagram anagram = anagramRepository.findByToken(generateAnagramToken(word));
+
+        words = Arrays.asList(anagram.getWords().replaceAll("\\[|]","").split(", "));
         if(words == null || words.isEmpty())//If not words found for the word param, short circuit exit
             return result;
 
@@ -168,7 +122,7 @@ public class AnagramService {
      * @param word used to generate anagram token, used in the lookup
      * @return List of words if found token for given word, or NULL if not
      */
-    public Set<String> fetchAnagramsOfWord(String word){
+    public List<String> fetchAnagramsOfWord(String word){
         return fetchAnagramsOfWord(word,0, true);
     }
 
@@ -189,23 +143,15 @@ public class AnagramService {
 
     }
 
-    /**
-     *  Endpoint that returns a count of words in the corpus and min/max/median/average word length (a.k.a Stats)
-     * @return a Stats object if there is data to calculate other wise return null
-     */
-    public StatsResource fetchStatsResource(){
-        if(!lengthToTokensMap.isEmpty()) {
-            stats.calculateStats(lengthToTokensMap.keySet());
-        }
-        return new StatsResource(stats);
-    }
 
     /**
      * Endpoint that identifies words with the most anagrams
      * @return Set of words with most anagrams
      */
     public Set<String> fetchMostAnagramsWords(){
-        return tokenToWordsMap.get(stats.getMostAnagramsToken());
+    //    Anagram topByWords = anagramRepository.getTopByWords();
+        return new HashSet<>();
+        //return tokenToWordsMap.get(stats.getMostAnagramsToken());
     }
 
     /**
@@ -216,12 +162,12 @@ public class AnagramService {
     public Set<String> anagramGroupOfSize(int size){
 
         Set<String> anagrams = new HashSet<>();
-        Set<String> tokens = lengthToTokensMap.get(size);
+/*        Set<String> tokens = lengthToTokensMap.get(size);
         if(tokens != null && !tokens.isEmpty()) {
             for (String t : tokens) {
                 anagrams.addAll(tokenToWordsMap.get(t));
             }
-        }
+        }*/
         return  anagrams;
     }
 
@@ -237,14 +183,14 @@ public class AnagramService {
     public boolean deleteWord(String word){
         boolean result= false;
         String token = generateAnagramToken(word);
-        if(tokenToWordsMap.containsKey(token)){//Check if token for that word exist in the map
+    /*    if(tokenToWordsMap.containsKey(token)){//Check if token for that word exist in the map
             Set<String> words = tokenToWordsMap.get(token);
             result = words.remove(word);
             if (words.isEmpty()) {
                 tokenToWordsMap.remove(token);//If there are no words left (last one got deleted) remove that token key entry as well
                 deleteTokenFromLengthMap(word.length(),token); //If the token key entry was deleted in onw Map, this needs to be reflected in the other
             }
-        }
+        }*/
         return result;
     }
 
@@ -257,10 +203,10 @@ public class AnagramService {
      */
     private boolean deleteTokenFromLengthMap(int length, String token){
         boolean result= false;
-        if(lengthToTokensMap.containsKey(length)){
+/*        if(lengthToTokensMap.containsKey(length)){
             Set<String> tokens=  lengthToTokensMap.get(length);
             result = tokens.remove(token);
-        }
+        }*/
         return result;
     }
 
@@ -268,9 +214,9 @@ public class AnagramService {
      * Delete ALL information in maps     *
      */
     public void deleteALL() {//Implement specific exception
-        lengthToTokensMap.clear();
+/*        lengthToTokensMap.clear();
         tokenToWordsMap.clear();
-        stats = new Stats();
+        stats = new Stats();*/
     }
 
     /**
@@ -278,13 +224,47 @@ public class AnagramService {
      * @param word to delete all anagrams from
      */
     public boolean deleteAllAnagramsOfWord(String word){
-        String token = generateAnagramToken(word);
+/*        String token = generateAnagramToken(word);
         if(tokenToWordsMap.remove(token, tokenToWordsMap.get(token))){// Remove all words for that anagram token and token key
             Set<String> tokens = lengthToTokensMap.get(word.length());
             tokens.remove(token);// Remove the anagram token itself from the other map
             return true;
-        }
+        }*/
         return false;
+
+    }
+
+    public boolean addWordsAsAnagram(List<String> words) throws IncorrectAnagramException {
+
+        boolean added= false;
+        for(String word:words){
+
+            if(Strings.isBlank(word)){
+                throw new IncorrectAnagramException();
+            }
+            String token = generateAnagramToken(word);
+            Anagram anagram = anagramRepository.findByToken(token);
+
+            if(anagram!=null){
+                Set<String> wordList = new HashSet<>(Arrays.asList(anagram.getWords().split(", ")));
+                if(wordList.contains(word)){
+                    added=false;
+                }else {
+                    wordList.add(word);
+                    anagram.setWords(wordList.toString());
+                }
+            }else {
+                anagram = new Anagram();
+                anagram.setLength(word.length());
+                anagram.setToken(token);
+                anagram.setWords(Collections.singletonList(word).toString());
+                added=true;
+            }
+            anagramRepository.save(anagram);
+
+        }
+        return added;
+
 
     }
 }
