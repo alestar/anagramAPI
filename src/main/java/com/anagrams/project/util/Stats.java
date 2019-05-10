@@ -8,9 +8,9 @@ import java.util.TreeSet;
  */
 public class Stats {
 
-    private int totalWords = -1;
-    private int sumWordLengths = -1;
-    private int mostAnagramsCounter = -1;
+    private int totalWords = 0;
+    private int sumWordLengths = 0;
+    private int mostAnagramsCounter = 0;
     private String mostAnagramsToken;
 
     private int minWordsLength = -1;
@@ -106,9 +106,21 @@ public class Stats {
         int[] arr= sorted.stream().mapToInt(Integer::intValue).toArray();
         minWordsLength = arr[0];
         maxWordsLength = arr[arr.length - 1];
-        medianWordsLength = arr.length / 2;
+        medianWordsLength = arr[arr.length / 2];
         averageWordLength= (sumWordLengths / arr.length);
-
     }
 
+    public boolean equals(Stats o) {
+    if (    totalWords == o.totalWords &&
+            sumWordLengths == o.sumWordLengths &&
+            mostAnagramsCounter == o.mostAnagramsCounter &&
+            mostAnagramsToken.equals(o.mostAnagramsToken) &&
+
+            minWordsLength == o.minWordsLength &&
+            maxWordsLength == o.maxWordsLength &&
+            medianWordsLength == o.medianWordsLength &&
+            averageWordLength == o.averageWordLength )
+            return true;
+        return false;
+    }
 }

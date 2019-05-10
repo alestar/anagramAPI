@@ -1,61 +1,278 @@
 package com.anagrams.project.service;
 
+import com.anagrams.project.model.StatsResource;
+import com.anagrams.project.util.Stats;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.*;
 
 import static org.junit.Assert.*;
 
 public class AnagramServiceTest {
-    private AnagramService anagramService;
+    private final String TOKEN_FOR_LENGTH_4 = "ader";
+    private final String TOKEN_FOR_LENGTH_5 = "admno";
+
+    private AnagramService testAnagramService;
+
+    private List<String> testWordsList4;
+    private List<String> testWordsList5;
+    
+    private Set<String> testWordsSet4;
+    private Set<String> testWordsSet5;
+    private Set<String> testTokensSet4;
+    private Set<String> testTokensSet5;
+
+    private Map<Integer, Set<String>> testLengthToTokensMap;
+    private Map<String,Set<String>> testTokenToWordsMap;
+    private Stats testStats;
+    private StatsResource testStatsResource;
+
 
     @Before
     public void doSetUp(){
-        anagramService= new AnagramService();
+        testWordsList4 = new ArrayList<>(Arrays.asList("read","dear","dare","ared","daer"));
+        testWordsList5 = new ArrayList<>(Arrays.asList("monad","nomad","Damon"));
+        testWordsSet4 = new HashSet<>( Arrays.asList("read","dear","dare","ared","daer"));
+        testWordsSet5 = new HashSet<>( Arrays.asList("monad","nomad","Damon"));   
+
+        testTokensSet4 = new HashSet<>( Arrays.asList(TOKEN_FOR_LENGTH_4));
+        testTokensSet5 = new HashSet<>( Arrays.asList(TOKEN_FOR_LENGTH_5));
+
+        testLengthToTokensMap= new HashMap<>();
+        testTokenToWordsMap= new HashMap<>();
+        testTokenToWordsMap.put(TOKEN_FOR_LENGTH_4, testWordsSet4);
+        testTokenToWordsMap.put(TOKEN_FOR_LENGTH_5,testWordsSet5);
+        testLengthToTokensMap.put(4, testTokensSet4);
+        testLengthToTokensMap.put(5, testTokensSet5);
+
+        testStats = new Stats();
+        testStats.setTotalWords(8);
+        testStats.setSumWordLengths(9);
+        testStats.setMostAnagramsCounter(5);
+        testStats.setMostAnagramsToken(TOKEN_FOR_LENGTH_4);
+
+        testStats.setMinWordsLength(4);
+        testStats.setMaxWordsLength(5);
+        testStats.setMedianWordsLength(5);
+        testStats.setAverageWordLength(4);
+        testStatsResource= new StatsResource(testStats);
     }
 
     @Test
-    public void isAnagram() {
-
-
+    public void generateAnagramTokenShouldReturnAValidToken(){
+        testAnagramService= new AnagramService();
+        assertEquals("", testAnagramService.generateAnagramToken(""));
+        assertEquals("", testAnagramService.generateAnagramToken(null));
+        assertEquals(TOKEN_FOR_LENGTH_4, testAnagramService.generateAnagramToken("read"));
+        assertEquals(TOKEN_FOR_LENGTH_5, testAnagramService.generateAnagramToken("nomad"));
     }
 
     @Test
-    public void addWordAsAnagram() {
+    public void testAddSingleListOfWordsAsAnagramShouldPopulateMaps() {
+        try {
+            testAnagramService= new AnagramService();
+            testAnagramService.addWordsAsAnagram(testWordsList4);
+            assertEquals(testTokensSet4, testAnagramService.getLengthToTokensMap().get(4));
+            assertEquals(testWordsSet4, testAnagramService.getTokenToWordsMap().get(TOKEN_FOR_LENGTH_4));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Test
-    public void getAnagramsOfWord() {
+    public void testAddMultipleListOfWordsAsAnagramShouldPopulateMaps() {
+        try {
+            List<String> combineList = new ArrayList<>();
+            combineList.addAll(testWordsList4);
+            combineList.addAll(testWordsList5);
+            testAnagramService = new AnagramService();
+            testAnagramService.addWordsAsAnagram(combineList);
+            assertEquals(testLengthToTokensMap,testAnagramService.getLengthToTokensMap());
+            assertEquals( testTokenToWordsMap,testAnagramService.getTokenToWordsMap());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Test
-    public void getAnagramsOfWordLimited() {
+    public void testFetchAnagramsOfWordNoParamsShouldReturnSetOfAnagrams() {
+        try {
+            testAnagramService= new AnagramService();
+            Set<String> setWords1 = new HashSet<>(Arrays.asList("dear","dare","ared","daer"));//Set without "read"
+            Set<String> setWords2 = new HashSet<>(Arrays.asList("read","dare","ared","daer"));//Set without "dear"
+            testAnagramService.addWordsAsAnagram(testWordsList4);
+
+            assertEquals(setWords1,testAnagramService.fetchAnagramsOfWord("read"));
+            assertEquals(setWords2,testAnagramService.fetchAnagramsOfWord("dear"));
+            assertNotEquals(setWords1,testAnagramService.fetchAnagramsOfWord("zwyq"));
+            assertEquals(new HashSet<>(),testAnagramService.fetchAnagramsOfWord("zwyq"));
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Test
-    public void deleteWord() {
+    public void testFetchAnagramsOfWordWithLimitSetShouldReturnSetOfAnagramLimited() {
+        try {
+            Set<String> setWords1 = new HashSet<>(Arrays.asList("daer"));
+            Set<String> setWords2 = new HashSet<>(Arrays.asList("read"));
+            testAnagramService = new AnagramService();
+            testAnagramService.addWordsAsAnagram(testWordsList4);
+
+            assertEquals(setWords1,testAnagramService.fetchAnagramsOfWord("read",1,true));
+            assertEquals(setWords2,testAnagramService.fetchAnagramsOfWord("dear",1,true));
+            assertEquals(new HashSet<>(),testAnagramService.fetchAnagramsOfWord("zwyq", 1, true));
+            assertNotEquals(setWords1,testAnagramService.fetchAnagramsOfWord("zwyq",1, true));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Test
-    public void getStats() {
-    }
+    public void testFetchAnagramsOfWordWithPermitPNSetNoLimitShouldReturnSetAnagramAccordingly() {
+        try {
+            List <String> words = new ArrayList<>( Arrays.asList("monad","nomad","Damon"));
+            Set<String> setWords1 = new HashSet<>(Arrays.asList("nomad"));
+            Set<String> setWords2 = new HashSet<>(Arrays.asList("monad"));
+            Set<String> setWords3 = new HashSet<>(Arrays.asList("monad","Damon"));
+            Set<String> setWords4 = new HashSet<>(Arrays.asList("monad","nomad"));
 
-    @Test
-    public void getAnagramsOfWordIncludePN() {
-    }
+            testAnagramService = new AnagramService();
+            testAnagramService.addWordsAsAnagram(testWordsList5);
 
-    @Test
-    public void getMostAnagramsWords() {
+            assertEquals(setWords1,testAnagramService.fetchAnagramsOfWord("monad",0,false));
+            assertEquals(setWords2,testAnagramService.fetchAnagramsOfWord("nomad",0,false));
+            assertEquals(setWords3,testAnagramService.fetchAnagramsOfWord("nomad",0,true));
+            assertEquals(setWords4,testAnagramService.fetchAnagramsOfWord("Damon",0,true));
+            assertEquals(setWords4,testAnagramService.fetchAnagramsOfWord("Damon",0,false));
+            assertEquals(new HashSet<>(),testAnagramService.fetchAnagramsOfWord("zwyq", 0, true));
+            assertNotEquals(setWords1,testAnagramService.fetchAnagramsOfWord("zwyq",0, true));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
     @Test
     public void areAnagrams() {
+
+        try {
+            List<String> combineList = new ArrayList<>();
+            combineList.addAll(testWordsList4);
+            combineList.addAll(testWordsList5);
+            testAnagramService = new AnagramService();
+            assertFalse(testAnagramService.areAnagrams(combineList));//Combined List are not anagrams between each other
+            assertFalse(testAnagramService.areAnagrams(new ArrayList<>()));
+            assertFalse(testAnagramService.areAnagrams(null));
+            assertTrue(testAnagramService.areAnagrams(testWordsList4));
+            assertTrue(testAnagramService.areAnagrams(testWordsList5));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    @Test
+    public void fetchStatsResource() {
+        try {
+            List<String> combineList = new ArrayList<>();
+            combineList.addAll(testWordsList4);
+            combineList.addAll(testWordsList5);
+            testAnagramService = new AnagramService();
+            testAnagramService.addWordsAsAnagram(combineList);
+            Stats stats= testAnagramService.getStats();
+            stats.calculateStats(testLengthToTokensMap.keySet());
+            assertTrue(testStatsResource.equals(testAnagramService.fetchStatsResource()));
+            assertTrue(testStats.equals(stats));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    @Test
+    public void fetchMostAnagramsWords() {
+        try {
+            List<String> combineList = new ArrayList<>();
+            combineList.addAll(testWordsList4);
+            combineList.addAll(testWordsList5);
+            testAnagramService = new AnagramService();
+            testAnagramService.addWordsAsAnagram(combineList);
+            assertEquals(testWordsSet4,testAnagramService.fetchMostAnagramsWords());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Test
     public void anagramGroupOfSize() {
+        try {
+            List<String> combineList = new ArrayList<>();
+            combineList.addAll(testWordsList4);
+            combineList.addAll(testWordsList5);
+            testAnagramService = new AnagramService();
+            testAnagramService.addWordsAsAnagram(combineList);
+            assertEquals(testWordsSet4,testAnagramService.anagramGroupOfSize(4));
+            assertEquals(testWordsSet5,testAnagramService.anagramGroupOfSize(5));
+            assertEquals(new HashSet<>(),testAnagramService.anagramGroupOfSize(0));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Test
-    public void deleteAllAnagramsOfWord() {
+    public void deleteWord() {
+        try {
+            testAnagramService= new AnagramService();
+            testAnagramService.addWordsAsAnagram(testWordsList4);
+            assertEquals(testWordsSet4, testAnagramService.getTokenToWordsMap().get(TOKEN_FOR_LENGTH_4));
+            assertTrue(testAnagramService.deleteWord("read"));
+            testWordsSet4.remove("read");
+            assertEquals(testWordsSet4, testAnagramService.getTokenToWordsMap().get(TOKEN_FOR_LENGTH_4));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
+    @Test
+    public void deleteAllAnagramsOfWord() {
+        try {
+            testAnagramService= new AnagramService();
+            testAnagramService.addWordsAsAnagram(testWordsList4);//First add the words
+            assertEquals(testWordsSet4, testAnagramService.getTokenToWordsMap().get(TOKEN_FOR_LENGTH_4));//Make sure those words are in the map
+            assertTrue(testAnagramService.deleteAllAnagramsOfWord("read"));//Then, proceed to remove the anagrams of the word
+            assertNull(testAnagramService.getTokenToWordsMap().get(TOKEN_FOR_LENGTH_4));//Nothing should be returning for that token key
+            assertFalse( testAnagramService.getLengthToTokensMap().get(4).contains(TOKEN_FOR_LENGTH_4));// That token is no longer in the other map
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void deleteALL() {
+        try {
+            List<String> combineList = new ArrayList<>();
+            combineList.addAll(testWordsList4);
+            combineList.addAll(testWordsList5);
+            testAnagramService = new AnagramService();
+            testAnagramService.addWordsAsAnagram(combineList);//Add anagrams
+            assertEquals(testWordsSet4,testAnagramService.getTokenToWordsMap().get(TOKEN_FOR_LENGTH_4));//Make sure the map is filled
+            testAnagramService.deleteALL();// Clear Maps and Stats
+            assertTrue(testAnagramService.getTokenToWordsMap().isEmpty());//Make sure both maps are empty
+            assertTrue(testAnagramService.getLengthToTokensMap().isEmpty());
+
+            assertEquals(0,testAnagramService.getStats().getTotalWords());//Make sure Stats is set to default
+            assertEquals(0,testAnagramService.getStats().getMostAnagramsCounter());
+            assertEquals(0,testAnagramService.getStats().getSumWordLengths());
+            assertNull(testAnagramService.getStats().getMostAnagramsToken());
+            assertEquals(-1,testAnagramService.getStats().getAverageWordLength());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
 }

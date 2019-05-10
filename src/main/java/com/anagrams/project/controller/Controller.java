@@ -1,8 +1,10 @@
 package com.anagrams.project.controller;
 
+import com.anagrams.project.exception.IncorrectAnagramException;
 import com.anagrams.project.model.AnagramGet;
 import com.anagrams.project.model.AnagramPost;
 import com.anagrams.project.model.StatsResource;
+import com.anagrams.project.service.AnagramLoader;
 import com.anagrams.project.service.AnagramService;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -22,13 +23,16 @@ public class Controller {
     @Autowired
     private AnagramService anagramService;
 
+    @Autowired
+    private AnagramLoader anagramLoader;
+
     @PostMapping("/words.json")
     public @ResponseBody ResponseEntity<String> addWordsAsAnagram(@RequestBody AnagramPost anagramPost){
 
         try {
             anagramService.addWordsAsAnagram(anagramPost.getWords());
         }
-        catch (Exception e){
+        catch (IncorrectAnagramException e){
                 return new ResponseEntity<>(e.getMessage(),HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity<>("List of words has been added to the corpus", HttpStatus.CREATED);
@@ -50,8 +54,21 @@ public class Controller {
         }
     }
 
+    @PostMapping("/ingest/words.json")
+    public @ResponseBody ResponseEntity<String> ingestWords(){
+
+        try {
+            anagramLoader.init();// to re-ingest the dic file
+        }
+        catch (Exception e){
+            return new ResponseEntity<>(e.getMessage(),HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>("Dictionary has been added to the corpus", HttpStatus.CREATED);
+
+    }
+
     @GetMapping("/anagrams/{word}.json")
-    public @ResponseBody ResponseEntity<String> fetchAnagramWords(@PathVariable(value = "word") String word, @RequestParam(defaultValue="-1", required = false) Integer limit,
+    public @ResponseBody ResponseEntity<String> fetchAnagramWords(@PathVariable(value = "word") String word, @RequestParam(defaultValue="0", required = false) Integer limit,
                                                                     @RequestParam (defaultValue="true", required = false)Boolean permitPN){
         Set<String> result = anagramService.fetchAnagramsOfWord(word, limit, permitPN);//Return All
 
@@ -63,6 +80,32 @@ public class Controller {
             AnagramGet anagramGet =  new AnagramGet(new ArrayList<>(result));
             return new ResponseEntity<>(gson.toJson(anagramGet), HttpStatus.OK);
         }
+    }
+
+    @GetMapping("/stats/words.json")
+    public @ResponseBody ResponseEntity<String> fetchStats(){
+
+        StatsResource statsResource=anagramService.fetchStatsResource();
+
+        if(statsResource == null) {
+            return new ResponseEntity<>("Unexpected response code", HttpStatus.NO_CONTENT);
+        }
+        else {
+            Gson gson = new Gson();
+            return new ResponseEntity<>(gson.toJson(statsResource), HttpStatus.OK);
+        }
+    }
+
+    @GetMapping("/most/words.json")
+    public @ResponseBody ResponseEntity<String> fetchMostAnagramsWords(){
+        Set<String> result=anagramService.fetchMostAnagramsWords();
+        return createResponseEntity(result);
+    }
+
+    @GetMapping("/anagrams/size.json")
+    public @ResponseBody ResponseEntity<String> fetchAnagramsGroupOfSize( @RequestParam String groupSize){
+        Set<String> result = anagramService.anagramGroupOfSize(Integer.valueOf(groupSize));
+        return createResponseEntity(result);
     }
 
     @DeleteMapping("/words.json")
@@ -85,12 +128,12 @@ public class Controller {
     @DeleteMapping("/words/{word}.json")
     public @ResponseBody ResponseEntity<String> deleteWord(@PathVariable(value = "word") String word){
 
-      if(!anagramService.deleteWord(word)){
-          return new ResponseEntity<>("Unexpected response code", HttpStatus.BAD_REQUEST);
-      }
-      else {
-          return new ResponseEntity<>("Unexpected response code", HttpStatus.NO_CONTENT);
-      }
+        if(!anagramService.deleteWord(word)){
+            return new ResponseEntity<>("Unexpected response code", HttpStatus.BAD_REQUEST);
+        }
+        else {
+            return new ResponseEntity<>("Unexpected response code", HttpStatus.NO_CONTENT);
+        }
     }
 
     @DeleteMapping("/words/anagrams/{word}.json")
@@ -104,24 +147,7 @@ public class Controller {
         }
     }
 
-    @GetMapping("/stats/words.json")
-    public @ResponseBody ResponseEntity<String> fetchStats(){
-
-        StatsResource statsResource=anagramService.fetchStatsResource();
-
-        if(statsResource == null) {
-            return new ResponseEntity<>("Unexpected response code", HttpStatus.NO_CONTENT);
-        }
-        else {
-            Gson gson = new Gson();
-            return new ResponseEntity<>(gson.toJson(statsResource), HttpStatus.OK);
-        }
-    }
-
-    @GetMapping("/most/words.json")
-    public @ResponseBody ResponseEntity<String> fetchMostAnagramsWords(){
-
-        Set<String> result=anagramService.fetchMostAnagramsWords();
+    private ResponseEntity<String> createResponseEntity(Set<String> result ){
 
         if(result == null) {
             return new ResponseEntity<>("Unexpected response code", HttpStatus.NO_CONTENT);
@@ -132,20 +158,4 @@ public class Controller {
             return new ResponseEntity<>(gson.toJson(anagramGet), HttpStatus.OK);
         }
     }
-
-    @GetMapping("/anagrams/size.json")
-    public @ResponseBody ResponseEntity<String> fetchAnagramsGroupOfSize( @RequestParam String groupSize){
-
-        Set<String> result = anagramService.anagramGroupOfSize(Integer.valueOf(groupSize));
-
-        if(result == null) {
-            return new ResponseEntity<>("Unexpected response code", HttpStatus.NO_CONTENT);
-        }
-        else {
-            Gson gson = new Gson();
-            AnagramGet anagramGet =  new AnagramGet(new ArrayList<>(result));
-            return new ResponseEntity<>(gson.toJson(anagramGet), HttpStatus.OK);
-        }
-    }
-
 }
