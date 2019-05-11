@@ -137,6 +137,8 @@ public class Controller {
     @DeleteMapping("/words/{word}.json")
     public @ResponseBody ResponseEntity<String> deleteWord(@PathVariable(value = "word") String word){
 
+
+
         if(!anagramService.deleteWord(word)){
             return new ResponseEntity<>("Unexpected response code", HttpStatus.BAD_REQUEST);
         }

@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
+import javax.transaction.Transactional;
 import java.util.List;
 
 @Repository
@@ -14,7 +15,7 @@ public interface AnagramRepository extends JpaRepository<Anagram, Long> {
 
     Anagram findByToken(String token);
 
-    Anagram findByVolume(Integer vol);
+    List<Anagram> findAllByLength(Integer vol);
 
     List<Anagram> findByLength(Integer Length);
 
@@ -27,15 +28,10 @@ public interface AnagramRepository extends JpaRepository<Anagram, Long> {
     @Query("select min(a.length) from Anagram a")
     int getMinLength();
 
-    @Query("select max(a.volume) from Anagram a")
-    int getMaxVolume();
+    @Query(value = "SELECT TOP 1  WORDS FROM ANAGRAM GROUP BY WORDS HAVING MAX(VOLUME) order by  volume desc", nativeQuery = true)
+    String getMaxVolume();
 
-    @Query("select words from Anagram where max(a.volume)")
-    String getMostAnagrams();
-
-    @Query("delete a.words from Anagram where a.words=words")
-
-    @Override
-    void deleteAll();
+    @Transactional
+    Long removeAnagramByToken(String token);
 }
 
