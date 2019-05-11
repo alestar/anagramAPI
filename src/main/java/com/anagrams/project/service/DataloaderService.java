@@ -52,12 +52,8 @@ public class DataloaderService {
             addWordAsAnagramToMap(w);
         }
         logger.info("The tokenToWordsMap: " + tokenToWordsMap.toString() );
-
         List<Anagram> anagramList = entityMapper.mapper(tokenToWordsMap);
-
         anagramRepository.saveAll(anagramList);
-
-
     }
 
     private void addWordAsAnagramToMap(String word) throws IncorrectAnagramException {
@@ -75,9 +71,7 @@ public class DataloaderService {
             words.add(word);
             tokenToWordsMap.put(token, words);
         }
-     /*   stats.addToSumWordLengths(word.length());// Add new length to the sum (for calculating average)
-        stats.incrementTotalWords();// Increment by total amount of word
-        stats.updateMostAnagramWords(tokenToWordsMap.get(token).size(),token);//update the MostAnagramWords counter and token correspondingly*/
+        //stats.updateMostAnagramWords(tokenToWordsMap.get(token).size(),token);//update the MostAnagramWords counter and token correspondingly*/
 
     }
 
