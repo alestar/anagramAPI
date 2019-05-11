@@ -25,7 +25,7 @@ public class EntityMapper {
             anagram.setLength(entry.getKey().length());
             anagram.setToken(entry.getKey());
             anagram.setWords(entry.getValue().toString());
-
+            anagram.setVolume(entry.getValue().size());
             anagramList.add(anagram);
 
         }
