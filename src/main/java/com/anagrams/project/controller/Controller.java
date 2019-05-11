@@ -107,13 +107,13 @@ public class Controller {
 
     @GetMapping("/most/words.json")
     public @ResponseBody ResponseEntity<String> fetchMostAnagramsWords(){
-        Set<String> result=anagramService.fetchMostAnagramsWords();
+        List<String> result=anagramService.fetchMostAnagramsWords();
         return createResponseEntity(result);
     }
 
     @GetMapping("/anagrams/size.json")
     public @ResponseBody ResponseEntity<String> fetchAnagramsGroupOfSize( @RequestParam String groupSize){
-        Set<String> result = anagramService.anagramGroupOfSize(Integer.valueOf(groupSize));
+        List<String> result = anagramService.anagramGroupOfSize(Integer.valueOf(groupSize));
         return createResponseEntity(result);
     }
 
@@ -156,7 +156,7 @@ public class Controller {
         }
     }
 
-    private ResponseEntity<String> createResponseEntity(Set<String> result ){
+    private ResponseEntity<String> createResponseEntity(List<String> result ){
 
         if(result == null) {
             return new ResponseEntity<>("Unexpected response code", HttpStatus.NO_CONTENT);
