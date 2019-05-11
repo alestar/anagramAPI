@@ -11,11 +11,7 @@ import java.util.Set;
 @Component
 public class EntityMapper {
 
-
     public List<Anagram> mapper(Map<String, Set<String>> tokenToWords){
-
-
-
         List<Anagram> anagramList =  new ArrayList<>();
 
         for(Map.Entry<String, Set<String>> entry : tokenToWords.entrySet()){

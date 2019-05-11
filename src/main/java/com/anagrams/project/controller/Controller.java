@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Logger;
 
 @RestController
@@ -113,7 +112,7 @@ public class Controller {
 
     @GetMapping("/anagrams/size.json")
     public @ResponseBody ResponseEntity<String> fetchAnagramsGroupOfSize( @RequestParam String groupSize){
-        List<String> result = anagramService.anagramGroupOfSize(Integer.valueOf(groupSize));
+        List<String> result = anagramService.fetchAnagramGroupOfSize(Integer.valueOf(groupSize));
         return createResponseEntity(result);
     }
 

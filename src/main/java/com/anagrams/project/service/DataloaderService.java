@@ -46,7 +46,6 @@ public class DataloaderService {
         }
     }
 
-
     public void populateDatabase(List<String> words) throws IncorrectAnagramException {
         for(String w: words){
             addWordAsAnagramToMap(w);
