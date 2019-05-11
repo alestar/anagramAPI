@@ -18,6 +18,7 @@ public class Anagram {
 
     private String words;
 
+    private Integer volume;
 
     public Anagram() {
     }
@@ -54,6 +55,14 @@ public class Anagram {
         this.words = words;
     }
 
+    public Integer getVolume() {
+        return volume;
+    }
+
+    public void setVolume(Integer volume) {
+        this.volume = volume;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -62,11 +71,13 @@ public class Anagram {
         return Objects.equals(id, anagram.id) &&
                 Objects.equals(token, anagram.token) &&
                 Objects.equals(length, anagram.length) &&
-                Objects.equals(words, anagram.words);
+                Objects.equals(words, anagram.words) &&
+                Objects.equals(volume, anagram.volume);
+
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, token, length, words);
+        return Objects.hash(id, token, length, words, volume);
     }
 }
