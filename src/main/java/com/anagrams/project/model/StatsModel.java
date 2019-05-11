@@ -11,10 +11,6 @@ public class StatsModel implements Comparable<StatsModel> {
     public StatsModel() {
     }
 
-
-
-
-
     public int getMinWordsLength() {
         return minWordsLength;
     }
