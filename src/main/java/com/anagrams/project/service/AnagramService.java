@@ -148,10 +148,11 @@ public class AnagramService {
      * Endpoint that identifies words with the most anagrams
      * @return Set of words with most anagrams
      */
-    public Set<String> fetchMostAnagramsWords(){
-    //    Anagram topByWords = anagramRepository.getTopByWords();
-        return new HashSet<>();
-        //return tokenToWordsMap.get(stats.getMostAnagramsToken());
+    public List<String> fetchMostAnagramsWords(){
+        List<String> list = new ArrayList<>();
+        //String words = anagramRepository.getMostAnagrams();
+       // list = Arrays.asList(words.replaceAll("\\[|]","").split(", "));
+        return list;
     }
 
     /**
@@ -159,9 +160,9 @@ public class AnagramService {
      * @param size of the group of anagrams
      * @return a set of anagram words that are of the same size
      */
-    public Set<String> anagramGroupOfSize(int size){
+    public List<String> anagramGroupOfSize(int size){
 
-        Set<String> anagrams = new HashSet<>();
+        List<String> anagrams = new ArrayList<>();
 /*        Set<String> tokens = lengthToTokensMap.get(size);
         if(tokens != null && !tokens.isEmpty()) {
             for (String t : tokens) {
@@ -213,10 +214,8 @@ public class AnagramService {
     /**
      * Delete ALL information in maps     *
      */
-    public void deleteALL() {//Implement specific exception
-/*        lengthToTokensMap.clear();
-        tokenToWordsMap.clear();
-        stats = new Stats();*/
+    public void deleteALL() {
+        anagramRepository.deleteAll();
     }
 
     /**
