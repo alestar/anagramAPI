@@ -1,14 +1,14 @@
 package com.anagrams.project.model;
 
 
-public class StatsModel implements Comparable<StatsModel> {
+public class Stats implements Comparable<Stats> {
 
     private int minWordsLength;
     private int maxWordsLength;
     private int medianWordsLength;
     private int averageWordLength;
 
-    public StatsModel() {
+    public Stats() {
     }
 
     public int getMinWordsLength() {
@@ -44,7 +44,7 @@ public class StatsModel implements Comparable<StatsModel> {
     }
 
     @Override
-    public int compareTo(StatsModel o) {
+    public int compareTo(Stats o) {
         if(minWordsLength == o.minWordsLength &&
                 maxWordsLength == o.maxWordsLength &&
                 medianWordsLength == o.medianWordsLength &&
@@ -54,7 +54,7 @@ public class StatsModel implements Comparable<StatsModel> {
     }
 
 
-    public boolean equals(StatsModel o) {
+    public boolean equals(Stats o) {
         if (minWordsLength == o.minWordsLength &&
                 maxWordsLength == o.maxWordsLength &&
                 medianWordsLength == o.medianWordsLength &&
