@@ -70,7 +70,7 @@
   Then either compile the source code provided into a Jar file or used the one given with the following command: `java -jar AnagramAPI.jar`
 
 # Use Instruction
- Request done to the API endpoint are done through JSON in both direction meaning that each endpoint most finish in a file.json and if it does return a result in would be in the form of JSON file as well. Fo example: 
+ - Once the application jar start working a web server to send request will be available at:  `http://localhost:3000`. Request send to the API endpoints are done through JSON in both direction, meaning that each endpoint most finish in a file.json, body of the request is pass as JSON and if it does return a result in the body as well, it would be in the form of JSON file as well. Fo example: 
  `http://localhost:3000/anagrams/read.json` would return  -> `{"anagrams":["daer","dear","ared","dare"]}`
 
 # Improvement
