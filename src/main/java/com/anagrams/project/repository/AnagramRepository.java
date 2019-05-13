@@ -15,9 +15,7 @@ public interface AnagramRepository extends JpaRepository<Anagram, Long> {
 
     Anagram findByToken(String token);
 
-    List<Anagram> findAllByLength(Integer vol);
-
-    List<Anagram> findByLength(Integer Length);
+    List<Anagram> findAllByLength(Integer length);
 
     @Query("Select AVG(a.length) from Anagram a")
     int getLengthAverage();
