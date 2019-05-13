@@ -12,25 +12,26 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.*;
 
 import static org.junit.Assert.*;
 
-//@RunWith(MockitoJUnitRunner.class)
-@RunWith(SpringRunner.class)
-@SpringBootTest
+@RunWith(MockitoJUnitRunner.class)
+//@SpringBootTest
 public class AnagramServiceTest {
     private final String TOKEN_FOR_LENGTH_4 = "ader";
     private final String TOKEN_FOR_LENGTH_5 = "admno";
 
-    @MockBean
+    @InjectMocks
     private DataloaderService mockDataloaderService;
-    @MockBean
+
+    @Mock
     private AnagramRepository mockAnagramRepository;
 
-    @Autowired
+    @InjectMocks
     private AnagramService testAnagramService;
 
 
@@ -50,7 +51,7 @@ public class AnagramServiceTest {
         //MockitoAnnotations.initMocks(this);
         //testAnagramService= new AnagramService();
         //mockDataloaderService = new DataloaderService();
-        mockDataloaderService.init();
+    //    mockDataloaderService.init();
 
         testWordsList4 = new ArrayList<>(Arrays.asList("read","dear","dare","ared","daer"));
         testWordsList5 = new ArrayList<>(Arrays.asList("monad","nomad","Damon"));

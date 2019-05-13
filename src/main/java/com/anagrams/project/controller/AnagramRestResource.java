@@ -14,13 +14,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
-import java.util.IllegalFormatConversionException;
 import java.util.List;
 import java.util.logging.Logger;
 
 @RestController
-public class Controller {
-    private static Logger logger= Logger.getLogger(Controller.class.getName());
+public class AnagramRestResource {
+    private static Logger logger= Logger.getLogger(AnagramRestResource.class.getName());
 
     @Autowired
     private AnagramService anagramService;

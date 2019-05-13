@@ -15,16 +15,14 @@ public class StatsService {
         Stats stats = new Stats();
 
 
-        stats.setAverageWordLength(anagramRepository.getLengthAverage());
-        stats.setMaxWordsLength(anagramRepository.getMaxLength());
-        stats.setMinWordsLength(anagramRepository.getMinLength());
+        stats.setAverageWordLength(anagramRepository.findLengthAverage());
+        stats.setMaxWordsLength(anagramRepository.findMaxLength());
+        stats.setMinWordsLength(anagramRepository.findMinLength());
 
         Long totalRows =anagramRepository.count();
         if(totalRows > 0) {
             Long medianId= totalRows / 2;
-            stats.setMedianWordsLength((anagramRepository.findById(medianId).get()).getLength());
-            //stats.setMedianWordsLength(anagramRepository.getMedianLength());
-
+            stats.setMedianWordsLength(anagramRepository.findByIdOrderByLengthDesc(medianId).getLength());
         }
      return stats;
     }

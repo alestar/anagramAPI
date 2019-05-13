@@ -17,19 +17,16 @@ public interface AnagramRepository extends JpaRepository<Anagram, Long> {
 
     Anagram findByToken(String token);
 
-    List<Anagram> findAllByLength(Integer length);
-
-    //@Query(value = "SELECT FROM Anagram a WHERE a.length >= size  ")// To fix
-    //List<Anagram>  getGroupSize(int size);
+    List<Anagram> findAllByLengthGreaterThanEqual(Integer length);
 
     @Query("Select AVG(a.length) from Anagram a")
-    int getLengthAverage();
+    int findLengthAverage();
 
     @Query("select max(a.length) from Anagram a")
-    int getMaxLength();
+    int findMaxLength();
 
     @Query("select min(a.length) from Anagram a")
-    int getMinLength();
+    int findMinLength();
 
     @Query(value = "SELECT TOP 1  WORDS FROM ANAGRAM GROUP BY WORDS HAVING MAX(VOLUME) order by  volume desc", nativeQuery = true)
     String getMaxVolume();
@@ -39,5 +36,7 @@ public interface AnagramRepository extends JpaRepository<Anagram, Long> {
 
     @Transactional
     Long removeAnagramByToken(String token);
+
+    Anagram findByIdOrderByLengthDesc(Long id);
 }
 
