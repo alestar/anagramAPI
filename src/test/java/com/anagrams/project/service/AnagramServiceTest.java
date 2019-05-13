@@ -1,20 +1,38 @@
-/*
 package com.anagrams.project.service;
 
-import com.anagrams.project.model.StatsResource;
-import com.anagrams.project.util.Stats;
+import com.anagrams.project.entity.Anagram;
+import com.anagrams.project.model.Stats;
+import com.anagrams.project.repository.AnagramRepository;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.*;
 
 import static org.junit.Assert.*;
 
+//@RunWith(MockitoJUnitRunner.class)
+@RunWith(SpringRunner.class)
+@SpringBootTest
 public class AnagramServiceTest {
     private final String TOKEN_FOR_LENGTH_4 = "ader";
     private final String TOKEN_FOR_LENGTH_5 = "admno";
 
+    @MockBean
+    private DataloaderService mockDataloaderService;
+    @MockBean
+    private AnagramRepository mockAnagramRepository;
+
+    @Autowired
     private AnagramService testAnagramService;
+
 
     private List<String> testWordsList4;
     private List<String> testWordsList5;
@@ -24,45 +42,33 @@ public class AnagramServiceTest {
     private Set<String> testTokensSet4;
     private Set<String> testTokensSet5;
 
-    private Map<Integer, Set<String>> testLengthToTokensMap;
-    private Map<String,Set<String>> testTokenToWordsMap;
     private Stats testStats;
-    private StatsResource testStatsResource;
 
 
     @Before
-    public void doSetUp(){
+    public void setUp(){
+        //MockitoAnnotations.initMocks(this);
+        //testAnagramService= new AnagramService();
+        //mockDataloaderService = new DataloaderService();
+        mockDataloaderService.init();
+
         testWordsList4 = new ArrayList<>(Arrays.asList("read","dear","dare","ared","daer"));
         testWordsList5 = new ArrayList<>(Arrays.asList("monad","nomad","Damon"));
-        testWordsSet4 = new HashSet<>( Arrays.asList("read","dear","dare","ared","daer"));
-        testWordsSet5 = new HashSet<>( Arrays.asList("monad","nomad","Damon"));   
 
+        testWordsSet4 = new HashSet<>( Arrays.asList("read","dear","dare","ared","daer"));
+        testWordsSet5 = new HashSet<>( Arrays.asList("monad","nomad","Damon"));
         testTokensSet4 = new HashSet<>( Arrays.asList(TOKEN_FOR_LENGTH_4));
         testTokensSet5 = new HashSet<>( Arrays.asList(TOKEN_FOR_LENGTH_5));
 
-        testLengthToTokensMap= new HashMap<>();
-        testTokenToWordsMap= new HashMap<>();
-        testTokenToWordsMap.put(TOKEN_FOR_LENGTH_4, testWordsSet4);
-        testTokenToWordsMap.put(TOKEN_FOR_LENGTH_5,testWordsSet5);
-        testLengthToTokensMap.put(4, testTokensSet4);
-        testLengthToTokensMap.put(5, testTokensSet5);
-
         testStats = new Stats();
-        testStats.setTotalWords(8);
-        testStats.setSumWordLengths(9);
-        testStats.setMostAnagramsCounter(5);
-        testStats.setMostAnagramsToken(TOKEN_FOR_LENGTH_4);
-
         testStats.setMinWordsLength(4);
         testStats.setMaxWordsLength(5);
         testStats.setMedianWordsLength(5);
         testStats.setAverageWordLength(4);
-        testStatsResource= new StatsResource(testStats);
     }
 
     @Test
     public void generateAnagramTokenShouldReturnAValidToken(){
-        testAnagramService= new AnagramService();
         assertEquals("", testAnagramService.generateAnagramToken(""));
         assertEquals("", testAnagramService.generateAnagramToken(null));
         assertEquals(TOKEN_FOR_LENGTH_4, testAnagramService.generateAnagramToken("read"));
@@ -72,15 +78,17 @@ public class AnagramServiceTest {
     @Test
     public void testAddSingleListOfWordsAsAnagramShouldPopulateMaps() {
         try {
-            testAnagramService= new AnagramService();
-            testAnagramService.populateDatabase(testWordsList4);
-            assertEquals(testTokensSet4, testAnagramService.getLengthToTokensMap().get(4));
-            assertEquals(testWordsSet4, testAnagramService.getTokenToWordsMap().get(TOKEN_FOR_LENGTH_4));
+            //mockDataloaderService.init();
+            testAnagramService.addWordsAsAnagram(testWordsList4);
+            Anagram testAnagram = mockAnagramRepository.findByToken(TOKEN_FOR_LENGTH_4);
+            Set<String> wordList = new HashSet<>(Arrays.asList(testAnagram.getWords().split(", ")));
+            assertNotNull(mockAnagramRepository.findByToken(TOKEN_FOR_LENGTH_4));
+            assertEquals(wordList,testWordsList4);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-
+/*
     @Test
     public void testAddMultipleListOfWordsAsAnagramShouldPopulateMaps() {
         try {
@@ -274,6 +282,6 @@ public class AnagramServiceTest {
             e.printStackTrace();
         }
     }
+*/
 
-
-}*/
+}
