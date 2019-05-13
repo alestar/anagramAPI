@@ -14,45 +14,45 @@
 	
 # Current Features
  - Adding words as anagrams to the corpus of word in database:
-	POST querying to `http://localhost:3000/words.json` with body `{ "words": ["read", "dear", "dare"] }` will this words as anagrams to the DB
+	- POST querying to `http://localhost:3000/words.json` with body `{ "words": ["read", "dear", "dare"] }` will this words as anagrams to the DB
 	Note: If the words exist in BD the response will be an HTTP 201, but the word won't be reinserted in the DB
 
  - Check if words are anagram in between each other:
-	POST querying to `http://localhost:3000/anagrams/words.json` with body `{ "words": ["read", "dear", "dare"] }` will return an HTTP 200 OK and message "This words are Anagrams between each others!"
+	- POST querying to `http://localhost:3000/anagrams/words.json` with body `{ "words": ["read", "dear", "dare"] }` will return an HTTP 200 OK and message "This words are Anagrams between each others!"
 
  - Fetch anagrams of a given english word: 
-	GET querying to `http://localhost:3000/anagrams/read.json` will return `{"anagrams":["daer","dear","ared","dare"]}`
+	- GET querying to `http://localhost:3000/anagrams/read.json` will return `{"anagrams":["daer","dear","ared","dare"]}`
 	
  - Fetch anagrams of a given english word, using limit, will limit the output:
-	GET querying to `http://localhost:3000/anagrams/dare.json?limit=1`  will return `{"anagrams":["read"]}`
+	- GET querying to `http://localhost:3000/anagrams/dare.json?limit=1`  will return `{"anagrams":["read"]}`
 
  - Fetch anagrams of a given english word, using permitPN( for permit Proper Noun), will include proper noun in the result:
-	GET querying to `http://localhost:3000/anagrams/monad.json?permitPN=true` will return `{"anagrams":["Damon","nomad"]}`
+	- GET querying to `http://localhost:3000/anagrams/monad.json?permitPN=true` will return `{"anagrams":["Damon","nomad"]}`
 
  - Fetch anagrams for a non english word, will return nothing:
-	GET querying to `http://localhost:3000/anagrams/zyxwv.json` will return `{"anagrams":[]}`
+	- GET querying to `http://localhost:3000/anagrams/zyxwv.json` will return `{"anagrams":[]}`
 
  - Fetch Stats for Anagram DB:
-	GET querying to `http://localhost:3000/stats/words.json` will return `{"minWordsLength":1,"maxWordsLength":24,"medianWordsLength":10,"averageWordLength":9}`
+	- GET querying to `http://localhost:3000/stats/words.json` will return `{"minWordsLength":1,"maxWordsLength":24,"medianWordsLength":10,"averageWordLength":9}`
 
  - Fetch anagrams for a group size >= x
-	GET querying `http://localhost:3000/anagrams/size.json?groupSize=24` will return `{"anagrams":["[scientificophilosophical]","[formaldehydesulphoxylate]","[tetraiodophenolphthalein]","[thyroparathyroidectomize]","[pathologicopsychological]"]}`
+	- GET querying `http://localhost:3000/anagrams/size.json?groupSize=24` will return `{"anagrams":["[scientificophilosophical]","[formaldehydesulphoxylate]","[tetraiodophenolphthalein]","[thyroparathyroidectomize]","[pathologicopsychological]"]}`
 
  - Fetch most anagrams will return the anagrams with more words
-	GET querying to `http://localhost:3000/most/words.json` will return `{"anagrams":["organ","groan","orang","angor","grano","goran","argon","Orang","nagor","Ronga","rogan"]}`
+	- GET querying to `http://localhost:3000/most/words.json` will return `{"anagrams":["organ","groan","orang","angor","grano","goran","argon","Orang","nagor","Ronga","rogan"]}`
 	
  - Delete ALL! Wiped out corpus DB:
-	DELETE querying to http://localhost:3000/words.json will return an HTTP 204 code "No content"
+	- DELETE querying to http://localhost:3000/words.json will return an HTTP 204 code "No content"
 	
  - Delete a word, will delete that word from the corpus DB:
-	DELETE querying to `http://localhost:3000/words/dear.json` will return an HTTP 204 code "No content"
+	- DELETE querying to `http://localhost:3000/words/dear.json` will return an HTTP 204 code "No content"
 
  - Delete anagrams of a word will delete all the words that are anagrams to that word
-	DELETE querying to `http://localhost:3000/words/anagrams/dear.json` will return an HTTP 200 code "OK"
+	- DELETE querying to `http://localhost:3000/words/anagrams/dear.json` will return an HTTP 200 code "OK"
 
 # Other Features
  - An endpoint that force a re-ingestion of a dictionary file information into the word corpus DB. (Implemented)
-	GET querying `http://localhost:3000/populate/words.json` will return HTTP CODE 201 "Dictionary has been added to the corpus"
+	- GET querying `http://localhost:3000/populate/words.json` will return HTTP CODE 201 "Dictionary has been added to the corpus"
 	
  - An endpoint that return the difference distance between to words to become anagrams (i.e `alcine` and `malice` are `distance = '1'`). Not available yet.
 
