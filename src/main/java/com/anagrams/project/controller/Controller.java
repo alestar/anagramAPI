@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.IllegalFormatConversionException;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -51,7 +52,7 @@ public class Controller {
                 return new ResponseEntity<>("This words are Anagrams between each others!", HttpStatus.OK);
             }
             else {
-                return new ResponseEntity<>("Unexpected response code", HttpStatus.OK);
+                return new ResponseEntity<>("This words are not anagrams", HttpStatus.BAD_REQUEST);
             }
         }
         catch (Exception e){
@@ -95,7 +96,7 @@ public class Controller {
     @GetMapping("/stats/words.json")
     public @ResponseBody ResponseEntity<String> fetchStats(){
 
-        Stats stats =statsService.calculateStats();
+        Stats stats = statsService.calculateStats();
 
         if(stats == null) {
             return new ResponseEntity<>("Unexpected response code", HttpStatus.NO_CONTENT);
@@ -114,7 +115,14 @@ public class Controller {
 
     @GetMapping("/anagrams/size.json")
     public @ResponseBody ResponseEntity<String> fetchAnagramsGroupOfSize( @RequestParam String groupSize){
-        List<String> result = anagramService.fetchAnagramGroupOfSize(Integer.valueOf(groupSize));
+        int gs = 0;
+        try {
+            gs = Integer.valueOf(groupSize);
+        }
+        catch (NumberFormatException e){
+            return new ResponseEntity<>("Unexpected response code", HttpStatus.BAD_REQUEST);
+        }
+        List<String> result = anagramService.fetchAnagramGroupOfSize(gs);
         return createResponseEntity(result);
     }
 
