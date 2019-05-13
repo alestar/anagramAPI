@@ -3,7 +3,7 @@ package com.anagrams.project.controller;
 import com.anagrams.project.exception.IncorrectAnagramException;
 import com.anagrams.project.model.AnagramGet;
 import com.anagrams.project.model.AnagramPost;
-import com.anagrams.project.model.StatsModel;
+import com.anagrams.project.model.Stats;
 import com.anagrams.project.service.AnagramService;
 import com.anagrams.project.service.DataloaderService;
 import com.anagrams.project.service.StatsService;
@@ -30,20 +30,17 @@ public class Controller {
     @Autowired
     private DataloaderService dataloaderService;
 
-    @PostMapping("/words.json")
-    public @ResponseBody ResponseEntity<String> addWordsAsAnagram(@RequestBody AnagramPost anagramPost){
+    @PostMapping("/populate/words.json")
+    public @ResponseBody ResponseEntity<String> populateWords(){
 
         try {
-            boolean success = anagramService.addWordsAsAnagram(anagramPost.getWords());
-            if (!success){
-                return new ResponseEntity<>("The word already exists", HttpStatus.BAD_REQUEST);
-            }
+            dataloaderService.init();// to re-ingest the dic file (if the anagram table is emty)
         }
-        catch (IncorrectAnagramException e){
-                return new ResponseEntity<>(e.getMessage(),HttpStatus.BAD_REQUEST);
+        catch (Exception e){
+            return new ResponseEntity<>(e.getMessage(),HttpStatus.BAD_REQUEST);
         }
+        return new ResponseEntity<>("Dictionary has been added to the corpus", HttpStatus.CREATED);
 
-        return new ResponseEntity<>("List of words has been added to the corpus", HttpStatus.CREATED);
     }
 
     @PostMapping("/anagrams/words.json")
@@ -62,17 +59,22 @@ public class Controller {
         }
     }
 
-    @PostMapping("/populate/words.json")
-    public @ResponseBody ResponseEntity<String> populateWords(){
-
+    @PostMapping("/words.json")
+    public @ResponseBody ResponseEntity<String> addWordsAsAnagram(@RequestBody AnagramPost anagramPost){
         try {
-            dataloaderService.init();// to re-ingest the dic file
+            boolean success = anagramService.addWordsAsAnagram(anagramPost.getWords());
+            if (success){
+                logger.info("This new words: " + anagramPost.getWords() + " has been inserted into DB successfully");
+                return new ResponseEntity<>("Unexpected response code", HttpStatus.CREATED);
+            }
+            else{
+                logger.info("The Anagram for those words already exist in data base");
+                return new ResponseEntity<>("Unexpected response code", HttpStatus.CREATED);
+            }
         }
-        catch (Exception e){
-            return new ResponseEntity<>(e.getMessage(),HttpStatus.BAD_REQUEST);
+        catch (IncorrectAnagramException e){
+                return new ResponseEntity<>(e.getMessage(),HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity<>("Dictionary has been added to the corpus", HttpStatus.CREATED);
-
     }
 
     @GetMapping("/anagrams/{word}.json")
@@ -93,14 +95,14 @@ public class Controller {
     @GetMapping("/stats/words.json")
     public @ResponseBody ResponseEntity<String> fetchStats(){
 
-        StatsModel statsModel =statsService.calculateStats();
+        Stats stats =statsService.calculateStats();
 
-        if(statsModel == null) {
+        if(stats == null) {
             return new ResponseEntity<>("Unexpected response code", HttpStatus.NO_CONTENT);
         }
         else {
             Gson gson = new Gson();
-            return new ResponseEntity<>(gson.toJson(statsModel), HttpStatus.OK);
+            return new ResponseEntity<>(gson.toJson(stats), HttpStatus.OK);
         }
     }
 
