@@ -15,6 +15,7 @@ import java.util.logging.Logger;
 @Component
 public class DataloaderService {
 
+
     @Autowired
     AnagramRepository anagramRepository;
 
@@ -23,7 +24,6 @@ public class DataloaderService {
 
     @Autowired
     AnagramService anagramService;
-
 
     @Autowired
     DataloaderService dataloaderService;
@@ -35,22 +35,23 @@ public class DataloaderService {
 
     private Map<String,Set<String>> tokenToWordsMap= new HashMap<>();
 
-
     private void loadDicFile(){
-        fileReader.readDictionaryFile();
-        try {
-            List<String> linesList = fileReader.getListOfLines();
-            dataloaderService.populateDatabase(linesList);
-        } catch (Exception e) {
-            e.printStackTrace();
+        if(anagramRepository.count() <= 0) {//If the table is empty
+            fileReader.readDictionaryFile();
+            try {
+                List<String> linesList = fileReader.getListOfLines();
+                dataloaderService.populateDatabase(linesList);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
     public void populateDatabase(List<String> words) throws IncorrectAnagramException {
-        for(String w: words){
+        for (String w : words) {
             addWordAsAnagramToMap(w);
         }
-        logger.info("The tokenToWordsMap: " + tokenToWordsMap.toString() );
+        logger.info("The tokenToWordsMap: " + tokenToWordsMap.toString());
         List<Anagram> anagramList = entityMapper.mapper(tokenToWordsMap);
         anagramRepository.saveAll(anagramList);
     }
