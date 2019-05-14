@@ -33,15 +33,14 @@ public class AnagramRestResource {
     @PostMapping("/populate/words.json")
     public @ResponseBody ResponseEntity<String> populateWords(){
 
-        try {
-            dataloaderService.init();// to re-ingest the dic file (if the anagram table is emty)
-        }
-        catch (Exception e){
-            return new ResponseEntity<>(e.getMessage(),HttpStatus.BAD_REQUEST);
-        }
-        return new ResponseEntity<>("Dictionary has been added to the corpus", HttpStatus.CREATED);
 
-    }
+           if(dataloaderService.init()){
+               return new ResponseEntity<>("Dictionary has been added to the corpus", HttpStatus.CREATED);
+           }else {
+               return new ResponseEntity<>("There was an error processing your request",HttpStatus.BAD_REQUEST);
+           }
+        }
+
 
     @PostMapping("/anagrams/words.json")
     public @ResponseBody ResponseEntity<String> areAnagrams(@RequestBody AnagramPost anagramPost){

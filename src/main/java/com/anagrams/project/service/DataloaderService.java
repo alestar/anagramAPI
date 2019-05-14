@@ -35,16 +35,20 @@ public class DataloaderService {
 
     private Map<String,Set<String>> tokenToWordsMap= new HashMap<>();
 
-    private void loadDicFile(){
+    private boolean loadDicFile(){
+        boolean success=false;
         if(anagramRepository.count() <= 0) {//If the table is empty
             fileReader.readDictionaryFile();
             try {
                 List<String> linesList = fileReader.getListOfLines();
                 dataloaderService.populateDatabase(linesList);
+                success= true;
             } catch (Exception e) {
                 e.printStackTrace();
+                return false;
             }
         }
+        return success;
     }
 
     public void populateDatabase(List<String> words) throws IncorrectAnagramException {
@@ -76,7 +80,7 @@ public class DataloaderService {
     }
 
     @PostConstruct
-    public void init(){
-        loadDicFile();
+    public boolean init(){
+        return loadDicFile();
     }
 }
