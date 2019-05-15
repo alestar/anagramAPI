@@ -146,7 +146,7 @@ public class AnagramRestResource {
     public @ResponseBody ResponseEntity<String> deleteAnagramsOfWord(@PathVariable(value = "word") String word){
 
         if(anagramService.deleteAnagramsOfWord(word)){
-            return new ResponseEntity<>("Unexpected response code", HttpStatus.OK);
+            return new ResponseEntity<>("Unexpected response code", HttpStatus.NO_CONTENT);
         }
         else {
             return new ResponseEntity<>("Unexpected response code", HttpStatus.BAD_REQUEST);
