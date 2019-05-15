@@ -139,9 +139,10 @@ public class AnagramService {
      * @param size of the group of anagrams
      * @return a set of anagram words that are of the same size
      */
-    public List<String> fetchAnagramGroupOfSize(int size) {
+    public AnagramGet fetchAnagramsOfGroupSize(int size) {
         List<Anagram> anagramList = anagramRepository.findAllByLengthGreaterThanEqual(size);
-        return anagramList.stream().map(Anagram::getWords).collect(Collectors.toList());
+        AnagramGet anagramGet= new AnagramGet(anagramList.stream().map(Anagram::getWords).collect(Collectors.toList()));
+        return anagramGet;
     }
 
     /**
