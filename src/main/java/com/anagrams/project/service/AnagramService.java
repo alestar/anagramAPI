@@ -52,12 +52,7 @@ public class AnagramService {
             Anagram anagram = anagramRepository.findByToken(token);
 
             if (anagram != null) {
-/*                Set<String> wordSet = new HashSet<>();
-                StringTokenizer st = new StringTokenizer(anagram.getWords(), ", ");
-                while(st.hasMoreTokens())
-                    wordSet.add(st.nextToken());*/
                 Set<String> wordSet = Arrays.stream(anagram.getWords().split(", ")).collect(Collectors.toSet());
-                //Set<String> wordSet = new HashSet<>(Arrays.asList(anagram.getWords().split(", ")));
                 if (wordSet.contains(word)) {
                     added = false;
                 } else {
@@ -68,8 +63,6 @@ public class AnagramService {
                 anagram = new Anagram();
                 anagram.setLength(word.length());
                 anagram.setToken(token);
-                Set<String> wordSet = new HashSet<>();
-                //anagram.setWords(Collections.singletonList(word).toString());
                 anagram.setWords(word);
                 added = true;
             }

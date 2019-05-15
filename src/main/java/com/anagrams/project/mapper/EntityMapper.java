@@ -20,7 +20,7 @@ public class EntityMapper {
 
             anagram.setLength(entry.getKey().length());
             anagram.setToken(entry.getKey());
-            anagram.setWords(entry.getValue().toString());
+            anagram.setWords(entry.getValue().toString().replaceAll("\\[|]", ""));
             anagram.setVolume(entry.getValue().size());
             anagramList.add(anagram);
 
