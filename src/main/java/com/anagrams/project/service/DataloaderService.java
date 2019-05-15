@@ -38,8 +38,8 @@ public class DataloaderService {
     private boolean loadDicFile(){
         boolean success=false;
         if(anagramRepository.count() <= 0) {//If the table is empty
-            fileReader.readDictionaryFile();
             try {
+                fileReader.readDictionaryFile();
                 List<String> linesList = fileReader.getListOfLines();
                 dataloaderService.populateDatabase(linesList);
                 success= true;
