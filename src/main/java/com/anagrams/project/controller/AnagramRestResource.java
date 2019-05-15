@@ -135,24 +135,22 @@ public class AnagramRestResource {
     @DeleteMapping("/words/{word}.json")
     public @ResponseBody ResponseEntity<String> deleteWord(@PathVariable(value = "word") String word){
 
-
-
-        if(!anagramService.deleteWord(word)){
-            return new ResponseEntity<>("Unexpected response code", HttpStatus.BAD_REQUEST);
+        if(anagramService.deleteWord(word)){
+            return new ResponseEntity<>("Unexpected response code", HttpStatus.NO_CONTENT);
         }
         else {
-            return new ResponseEntity<>("Unexpected response code", HttpStatus.NO_CONTENT);
+            return new ResponseEntity<>("Unexpected response code", HttpStatus.BAD_REQUEST);
         }
     }
 
     @DeleteMapping("/words/anagrams/{word}.json")
     public @ResponseBody ResponseEntity<String> deleteAnagramsOfWord(@PathVariable(value = "word") String word){
 
-        if(!anagramService.deleteAllAnagramsOfWord(word)){
-            return new ResponseEntity<>("Unexpected response code", HttpStatus.BAD_REQUEST);
+        if(anagramService.deleteAnagramsOfWord(word)){
+            return new ResponseEntity<>("Unexpected response code", HttpStatus.OK);
         }
         else {
-            return new ResponseEntity<>("Unexpected response code", HttpStatus.OK);
+            return new ResponseEntity<>("Unexpected response code", HttpStatus.BAD_REQUEST);
         }
     }
 
