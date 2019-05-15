@@ -1,6 +1,5 @@
 package com.anagrams.project.controller;
 
-import com.anagrams.project.exception.IncorrectAnagramException;
 import com.anagrams.project.model.AnagramGet;
 import com.anagrams.project.model.AnagramPost;
 import com.anagrams.project.model.Stats;
@@ -32,15 +31,12 @@ public class AnagramRestResource {
 
     @PostMapping("/populate/words.json")
     public @ResponseBody ResponseEntity<String> populateWords(){
-
-
            if(dataloaderService.init()){
                return new ResponseEntity<>("Dictionary has been added to the corpus", HttpStatus.CREATED);
            }else {
                return new ResponseEntity<>("There was an error processing your request",HttpStatus.BAD_REQUEST);
            }
-        }
-
+    }
 
     @PostMapping("/anagrams/words.json")
     public @ResponseBody ResponseEntity<String> areAnagrams(@RequestBody AnagramPost anagramPost){
@@ -60,24 +56,19 @@ public class AnagramRestResource {
 
     @PostMapping("/words.json")
     public @ResponseBody ResponseEntity<String> addWordsAsAnagram(@RequestBody AnagramPost anagramPost){
-        try {
-            boolean success = anagramService.addWordsAsAnagram(anagramPost.getWords());
-            if (success){
-                logger.info("This new words: " + anagramPost.getWords() + " has been inserted into DB successfully");
-                return new ResponseEntity<>("Unexpected response code", HttpStatus.CREATED);
-            }
-            else{
-                logger.info("The Anagram for those words already exist in data base");
-                return new ResponseEntity<>("Unexpected response code", HttpStatus.CREATED);
-            }
+        boolean success = anagramService.addWordsAsAnagram(anagramPost.getWords());
+        if (success){
+            logger.info("This new words: " + anagramPost.getWords() + " has been inserted into DB successfully");
+            return new ResponseEntity<>("Unexpected response code", HttpStatus.CREATED);
         }
-        catch (IncorrectAnagramException e){
-                return new ResponseEntity<>(e.getMessage(),HttpStatus.BAD_REQUEST);
+        else{
+            logger.info("The Anagram for those words already exist in data base");
+            return new ResponseEntity<>("Unexpected response code", HttpStatus.CREATED);
         }
     }
 
     @GetMapping("/anagrams/{word}.json")
-    public @ResponseBody ResponseEntity<String> fetchAnagramWords(@PathVariable(value = "word") String word, @RequestParam(defaultValue="0", required = false) Integer limit,
+    public @ResponseBody ResponseEntity<String> fetchAnagramsOfWord(@PathVariable(value = "word") String word, @RequestParam(defaultValue="0", required = false) Integer limit,
                                                                     @RequestParam (defaultValue="true", required = false)Boolean permitPN){
         List<String> result = anagramService.fetchAnagramsOfWord(word, limit, permitPN);//Return All
 
@@ -113,7 +104,7 @@ public class AnagramRestResource {
 
     @GetMapping("/anagrams/size.json")
     public @ResponseBody ResponseEntity<String> fetchAnagramsGroupOfSize( @RequestParam String groupSize){
-        int gs = 0;
+        int gs;
         try {
             gs = Integer.valueOf(groupSize);
         }
@@ -129,7 +120,7 @@ public class AnagramRestResource {
 
         try{
             logger.info("Attempt to delete ALL data: ");
-            anagramService.deleteALL();
+            anagramService.deleteAll();
         }
         catch (Exception e){
             logger.info("Error deleting ALL data: " + e.getMessage());
