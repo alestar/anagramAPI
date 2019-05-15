@@ -6,14 +6,11 @@ import com.anagrams.project.model.Stats;
 import com.anagrams.project.service.AnagramService;
 import com.anagrams.project.service.DataloaderService;
 import com.anagrams.project.service.StatsService;
-import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Logger;
 
 @RestController
@@ -99,7 +96,7 @@ public class AnagramRestResource {
     }
 
     @GetMapping("/anagrams/size.json")
-    public @ResponseBody ResponseEntity<String> fetchAnagramsGroupOfSize( @RequestParam String groupSize){
+    public @ResponseBody ResponseEntity fetchAnagramsOfGroupSize(@RequestParam String groupSize){
         int gs;
         try {
             gs = Integer.valueOf(groupSize);
@@ -107,8 +104,14 @@ public class AnagramRestResource {
         catch (NumberFormatException e){
             return new ResponseEntity<>("Unexpected response code", HttpStatus.BAD_REQUEST);
         }
-        List<String> result = anagramService.fetchAnagramGroupOfSize(gs);
-        return createResponseEntity(result);
+
+        AnagramGet anagramGet = anagramService.fetchAnagramsOfGroupSize(gs);
+        if(anagramGet.getAnagrams().isEmpty()) {
+            return new ResponseEntity<>("Unexpected response code", HttpStatus.OK);
+        }
+        else {
+            return new ResponseEntity<>(anagramGet, HttpStatus.OK);
+        }
     }
 
     @DeleteMapping("/words.json")
@@ -120,7 +123,7 @@ public class AnagramRestResource {
         }
         catch (Exception e){
             logger.info("Error deleting ALL data: " + e.getMessage());
-            return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity("Unexpected response code", HttpStatus.INTERNAL_SERVER_ERROR);
         }
         logger.info("Deleted ALL data successfully!");
 
@@ -147,18 +150,6 @@ public class AnagramRestResource {
         }
         else {
             return new ResponseEntity<>("Unexpected response code", HttpStatus.BAD_REQUEST);
-        }
-    }
-
-    private ResponseEntity<String> createResponseEntity(List<String> result ){
-
-        if(result == null) {
-            return new ResponseEntity<>("Unexpected response code", HttpStatus.NO_CONTENT);
-        }
-        else {
-            Gson gson = new Gson();
-            AnagramGet anagramGet =  new AnagramGet(new ArrayList<>(result));
-            return new ResponseEntity<>(gson.toJson(anagramGet), HttpStatus.OK);
         }
     }
 }
