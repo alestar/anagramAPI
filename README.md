@@ -57,7 +57,7 @@
  - An endpoint that return the difference distance between to words to become anagrams (i.e `alcine` and `malice` are `distance = '1'`). Not available yet.
 
 # Edge Cases
- - Edge cases have been considerate for numeric and word valid inputs. When and invalid input is inserted in the query, most likely it will return a Bad Request HTTP code 400 error, but it can also return an internal error HTTP 500. In other cases, just return an empty result in the body.
+ - Edge cases have been considerate for numeric and word invalid inputs. When and invalid input is inserted in the query, most likely it will return a Bad Request HTTP code 400 error, but it can also return an internal error HTTP 500. In other cases, it will simple return an empty result in the body, indicating that none information was retrieved.
 
 # Design Consideration and Trade Off Overview
 - A relation database is used to persist information since the information is heavily queried but al mont never modified adn relational data base are usually optimized for more complex queries. If in the future modification to the data base are more frequent and reads request start to escalate, maybe a consideration for a NO SQL database.
@@ -74,7 +74,7 @@
  `http://localhost:3000/anagrams/read.json` would return: `{"anagrams":["daer","dear","ared","dare"]}`.
 
 # Improvement
- - Endpoint for addWordsAsAnagrams() should return a more comprehensive result for words that could successfully be added as a group of anagrams, or as an individual anagram and  finally words that did not fall in those categories(invalid words).
+ - Endpoint for addWordsAsAnagrams() should return a more comprehensive result for words that could successfully be added as a group of anagrams, or as an individual anagram and  finally words that did not fall in those categories(invalid words). Currently, this endpoint only works when all words are anagram in between each other.
  - Design some sort of cache for DB most frequent/popular queries and preprocess views for really big queries that impact the performing of the DB.
  - For really big result returned (SELECT *) created some sort of pagination mechanism or parameter that allows to batch the query result into smaller pieces instead of returning the whole big chunk.
  - Validate that words are actually English words, using some sor of linguistic resource. Given the scenario that the entire word corpus is deleted from the DB and there is none dictionary file to ingest or it has not been ingested yet, then when trying to add a new word valid or invalid there is no why to know if it's an actual valid English word since there is not previous information to compare the word to.
