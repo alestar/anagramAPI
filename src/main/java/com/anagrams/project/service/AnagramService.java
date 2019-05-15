@@ -19,8 +19,6 @@ import java.util.stream.Collectors;
 @Service
 public class AnagramService {
 
-
-
     @Autowired
     AnagramRepository anagramRepository;
 
@@ -54,21 +52,20 @@ public class AnagramService {
 
             if (anagram != null) {
                 Set<String> wordSet = Arrays.stream(anagram.getWords().split(", ")).collect(Collectors.toSet());
-                if (wordSet.contains(word)) {
-                    added = false;
-                } else {
+                if (!wordSet.contains(word)) {
                     wordSet.add(word);
-                    anagram.setWords(wordSet.toString());
+                    anagram.setWords(wordSet.toString().replaceAll("\\[|]", ""));
+                    anagramRepository.save(anagram);
+                    added = true;
                 }
             } else {
                 anagram = new Anagram();
                 anagram.setLength(word.length());
                 anagram.setToken(token);
                 anagram.setWords(word);
+                anagramRepository.save(anagram);
                 added = true;
             }
-            anagramRepository.save(anagram);
-
         }
         return added;
     }
@@ -76,6 +73,21 @@ public class AnagramService {
     //-------------------------------------------------------------------------------------------------------------------
     //                                          FETCH
     //-------------------------------------------------------------------------------------------------------------------
+
+    /**
+     * Endpoint that takes a set of words and returns whether or not they are all anagrams of each other     *
+     * @param words to determinate if ALL are anagrams
+     * @return true/false if ALL words are anagrams of each other
+     */
+    public boolean areAnagrams(List<String> words) {
+        if (words == null || words.isEmpty())
+            return false;
+        String token = generateAnagramToken((String) words.toArray()[0]);
+        for (String w : words)
+            if (!generateAnagramToken(w).equals(token))//Return false as soon as the first difference between tokens occur
+                return false;
+        return true;
+    }
 
     /**
      * This endpoint should support an optional query param that indicates the maximum number of results to return.     *
@@ -97,7 +109,7 @@ public class AnagramService {
             return new AnagramGet(result);
 
         words = convertWordsToList(anagram.getWords());
-        if (words.isEmpty())//If not words found for the word param, short circuit exit
+        if (words.isEmpty())//If not found words for the word param, short circuit exit
             return new AnagramGet(result);
 
         if (limit == 0 && permitPN) {//If no limit and Proper Noun are permitted,
@@ -119,9 +131,7 @@ public class AnagramService {
                 }
             }
         }
-
-        AnagramGet anagramGet = new AnagramGet(result);
-        return anagramGet;
+        return new AnagramGet(result);
     }
 
     /**
@@ -130,8 +140,12 @@ public class AnagramService {
      * @return Set of words with most anagrams
      */
     public AnagramGet fetchMostAnagramsWords() {
+        List<String> result = new ArrayList<>();
         String words = anagramRepository.getMaxVolume();
-        return new AnagramGet(convertWordsToList(words));
+        if(words!= null && !words.isEmpty()){
+            result= convertWordsToList(words);
+        }
+        return new AnagramGet(result);
     }
 
     /**
@@ -139,25 +153,16 @@ public class AnagramService {
      * @param size of the group of anagrams
      * @return a set of anagram words that are of the same size
      */
-    public AnagramGet fetchAnagramsOfGroupSize(int size) {
-        List<Anagram> anagramList = anagramRepository.findAllByLengthGreaterThanEqual(size);
-        AnagramGet anagramGet= new AnagramGet(anagramList.stream().map(Anagram::getWords).collect(Collectors.toList()));
-        return anagramGet;
-    }
+    public AnagramGet fetchAnagramsOfGroupSize(String size) {
+        List<String> result = new ArrayList<>();
+        if(StringUtils.isNumeric(size)){//If it's a valid param number
+            List<Anagram> anagramList = anagramRepository.findAllByLengthGreaterThanEqual(Integer.parseInt(size));
 
-    /**
-     * Endpoint that takes a set of words and returns whether or not they are all anagrams of each other     *
-     * @param words to determinate if ALL are anagrams
-     * @return true/false if ALL words are anagrams of each other
-     */
-    public boolean areAnagrams(List<String> words) {
-        if (words == null || words.isEmpty())
-            return false;
-        String token = generateAnagramToken((String) words.toArray()[0]);
-        for (String w : words)
-            if (!generateAnagramToken(w).equals(token))//Return false as soon as the first difference between tokens occur
-                return false;
-        return true;
+            if(anagramList != null) {//It found information in the DB
+                result = anagramList.stream().map(Anagram::getWords).collect(Collectors.toList());
+            }
+        }
+        return new AnagramGet(result);
     }
 
     //-------------------------------------------------------------------------------------------------------------------
@@ -167,16 +172,8 @@ public class AnagramService {
     /**
      * Delete ALL information in maps     *
      */
-    public boolean deleteAll() {
-        boolean success;
-        try {
+    public void deleteAll() {
             anagramRepository.deleteAll();
-            success= true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            success= false;
-        }
-        return success;
     }
 
     /**
@@ -192,7 +189,7 @@ public class AnagramService {
         if (null != anagram) {
             List<String> words = convertWordsToList(anagram.getWords());
             words.remove(word);
-            anagram.setWords(words.toString());
+            anagram.setWords(words.toString().replaceAll("\\[|]", ""));
 
             anagramRepository.save(anagram);
             result=true;
