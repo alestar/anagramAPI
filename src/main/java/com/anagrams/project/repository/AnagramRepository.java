@@ -31,9 +31,6 @@ public interface AnagramRepository extends JpaRepository<Anagram, Long> {
     @Query(value = "SELECT TOP 1  WORDS FROM ANAGRAM GROUP BY WORDS HAVING MAX(VOLUME) order by  volume desc", nativeQuery = true)
     String getMaxVolume();
 
-    //@Query( "SELECT a.length FROM Anagram GROUP BY LENGHT HAVING a ORDER BY length desc ")// To fix
-    //int getMedianLength();
-
     @Transactional
     Long removeAnagramByToken(String token);
 
