@@ -248,12 +248,12 @@ public class AnagramServiceTest {
         }
     }
     @Test
-    public void deleteAllAnagramsOfWord() {
+    public void deleteAnagramsOfWord() {
         try {
             testAnagramService= new AnagramService();
             testAnagramService.populateDatabase(testWordsList4);//First add the words
             assertEquals(testWordsSet4, testAnagramService.getTokenToWordsMap().get(TOKEN_FOR_LENGTH_4));//Make sure those words are in the map
-            assertTrue(testAnagramService.deleteAllAnagramsOfWord("read"));//Then, proceed to remove the anagrams of the word
+            assertTrue(testAnagramService.deleteAnagramsOfWord("read"));//Then, proceed to remove the anagrams of the word
             assertNull(testAnagramService.getTokenToWordsMap().get(TOKEN_FOR_LENGTH_4));//Nothing should be returning for that token key
             assertFalse( testAnagramService.getLengthToTokensMap().get(4).contains(TOKEN_FOR_LENGTH_4));// That token is no longer in the other map
         } catch (Exception e) {
