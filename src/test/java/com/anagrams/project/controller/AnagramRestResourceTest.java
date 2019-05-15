@@ -41,21 +41,49 @@ public class AnagramRestResourceTest {
     @InjectMocks
     AnagramRestResource anagramRestResource;
 
+    //-------------------------------------------------------------------------------------------------------------------
+    //                                          ADD
+    //-------------------------------------------------------------------------------------------------------------------
+
     @Test
-    public void populate_words_should_return_201_response_if_true() {
+    public void shouldReturn201ResponseWhenPopulatedDB() {
         when(dataloaderService.init()).thenReturn(true);
-        ResponseEntity expectedResponse = new ResponseEntity<>("Dictionary has been added to the corpus", HttpStatus.CREATED);
+        ResponseEntity expectedResponse = new ResponseEntity<>("Dictionary file has been loaded in to the corpus DB", HttpStatus.CREATED);
         ResponseEntity actualResponse = anagramRestResource.populateWords();
         assertEquals(expectedResponse, actualResponse);
     }
 
     @Test
-    public void populate_words_should_return_400_response_if_false(){
+    public void shouldReturn400ResponseWhenAlreadyPopulatedDB(){
         when(dataloaderService.init()).thenReturn(false);
-        ResponseEntity expectedResponse =  new ResponseEntity<>("There was an error processing your request", HttpStatus.BAD_REQUEST);
+        ResponseEntity expectedResponse =  new ResponseEntity<>("The DB is already filled up", HttpStatus.BAD_REQUEST);
         ResponseEntity actualResponse = anagramRestResource.populateWords();
         assertEquals(actualResponse, expectedResponse);
     }
+
+    @Test
+    public void shouldReturn201ResponseAddedWordsIfTrue() {
+        AnagramPost anagramPostMock = mock(AnagramPost.class);
+        List<String> words = anagramPostMock.getWords();
+        when(anagramService.addWordsAsAnagram(words)).thenReturn(true);
+        ResponseEntity expectedResponse = new ResponseEntity<>("The new word(s) were added as anagrams", HttpStatus.CREATED);
+        ResponseEntity actualResponse = anagramRestResource.addWordsAsAnagram(anagramPostMock);
+        assertEquals(expectedResponse, actualResponse);
+    }
+
+    @Test
+    public void shouldReturn201ResponseAddedWordsIfFalse() {
+        AnagramPost anagramPostMock = mock(AnagramPost.class);
+        List<String> words = anagramPostMock.getWords();
+        when(anagramService.addWordsAsAnagram(words)).thenReturn(false);
+        ResponseEntity expectedResponse = new ResponseEntity<>("The input word(s) have already been added", HttpStatus.CREATED);
+        ResponseEntity actualResponse = anagramRestResource.addWordsAsAnagram(anagramPostMock);
+        assertEquals(expectedResponse, actualResponse);
+    }
+
+    //-------------------------------------------------------------------------------------------------------------------
+    //                                          FETCH
+    //-------------------------------------------------------------------------------------------------------------------
 
     @Test
     public void shouldReturnWordsAreAnagramsIfTrue() {
@@ -77,30 +105,10 @@ public class AnagramRestResourceTest {
         assertEquals(expectedResponse, actualResponse);
     }
 
+    //Fetch Word as Anagram
     @Test
-    public void shouldReturn201ResponseAfterAddingWord() {
-        AnagramPost anagramPostMock = mock(AnagramPost.class);
-        List<String> words = anagramPostMock.getWords();
-        when(anagramService.addWordsAsAnagram(words)).thenReturn(true);
-        ResponseEntity expectedResponse = new ResponseEntity<>("Unexpected response code", HttpStatus.CREATED);
-        ResponseEntity actualResponse = anagramRestResource.addWordsAsAnagram(anagramPostMock);
-        assertEquals(expectedResponse, actualResponse);
-    }
-
-    @Test
-    public void shouldReturn200ResponseIfThereAreNoAnagramsOfWord(){
-        List<String> list = new ArrayList<>();
-        AnagramGet anagramGet = new AnagramGet(list);
-        when(anagramService.fetchAnagramsOfWord(anyString(),anyInt(),anyBoolean())).thenReturn(anagramGet);
-        ResponseEntity expectedResponse = new ResponseEntity<>("Unexpected response code", HttpStatus.OK);
-        ResponseEntity actualResponse = anagramRestResource.fetchAnagramsOfWord("aWord", 0, true);
-        assertEquals(expectedResponse, actualResponse);
-    }
-
-    @Test
-    public void shouldReturnResultInTheBodyResponseIfThereAreAnagramsOfWord(){
-        AnagramGet anagramGet = new AnagramGet();
-        anagramGet.setAnagrams(mock(List.class));
+    public void shouldReturn200ResponseAndResultInTheBodyResponseWhenFetchForAnagramsOfExistingWord(){
+        AnagramGet anagramGet = new AnagramGet(mock(List.class));
         when(anagramService.fetchAnagramsOfWord(anyString(),anyInt(),anyBoolean())).thenReturn(anagramGet);
         ResponseEntity expectedResponse = new ResponseEntity(anagramGet, HttpStatus.OK);
         ResponseEntity actualResponse = anagramRestResource.fetchAnagramsOfWord("aWord", 0, true);
@@ -108,15 +116,58 @@ public class AnagramRestResourceTest {
     }
 
     @Test
-    public void shouldReturnStatsIfStatsIsNull() {
-        when(statsService.calculateStats()).thenReturn(null);
-        ResponseEntity expectedResponse = new ResponseEntity<>("Unexpected response code", HttpStatus.NO_CONTENT);
-        ResponseEntity actualResponse = anagramRestResource.fetchStats();
+    public void shouldReturn200ResponseAndResultInTheBodyResponseWhenFetchForAnagramsOfNonExistingWord(){
+        List<String> list = new ArrayList<>();
+        AnagramGet anagramGet = new AnagramGet(list);
+        when(anagramService.fetchAnagramsOfWord(anyString(),anyInt(),anyBoolean())).thenReturn(anagramGet);
+        ResponseEntity expectedResponse = new ResponseEntity(anagramGet, HttpStatus.OK);
+        ResponseEntity actualResponse = anagramRestResource.fetchAnagramsOfWord("aWord", 0, true);
+        Assert.assertEquals(expectedResponse, actualResponse);
+    }
+
+    //Fetch Most Anagrams Words
+    @Test
+    public void shouldReturn200ResponseIfMostAnagramsDoesNotExist(){
+        List<String> list = new ArrayList<>();
+        AnagramGet anagramGet = new AnagramGet(list);
+        when(anagramService.fetchMostAnagramsWords()).thenReturn(anagramGet);
+        ResponseEntity expectedResponse = new ResponseEntity<>(anagramGet, HttpStatus.OK);
+        ResponseEntity actualResponse = anagramRestResource.fetchMostAnagramsWords();
         assertEquals(expectedResponse, actualResponse);
     }
 
     @Test
-    public void shouldReturnStatsIfStatsIsNotNull() {
+    public void shouldReturn200ResponseAndResultInTheBodyResponseIfMostAnagramsExist(){
+        AnagramGet anagramGet = new AnagramGet(mock(List.class));
+        when(anagramService.fetchMostAnagramsWords()).thenReturn(anagramGet);
+        ResponseEntity expectedResponse = new ResponseEntity(anagramGet, HttpStatus.OK);
+        ResponseEntity actualResponse = anagramRestResource.fetchMostAnagramsWords();
+        Assert.assertEquals(expectedResponse, actualResponse);
+    }
+
+    //Fetch Anagrams of Group Size
+    @Test
+    public void shouldReturn200ResponseIfAnagramsOfGroupSizeDoesNotExist(){
+        List<String> list = new ArrayList<>();
+        AnagramGet anagramGet = new AnagramGet(list);
+        when(anagramService.fetchAnagramsOfGroupSize(anyString())).thenReturn(anagramGet);
+        ResponseEntity expectedResponse = new ResponseEntity<>(anagramGet, HttpStatus.OK);
+        ResponseEntity actualResponse = anagramRestResource.fetchAnagramsOfGroupSize("2");
+        assertEquals(expectedResponse, actualResponse);
+    }
+
+    @Test
+    public void shouldReturnResultInTheBodyResponseIfAnagramsOfGroupSizeExist(){
+        AnagramGet anagramGet = new AnagramGet(mock(List.class));
+        when(anagramService.fetchAnagramsOfGroupSize(anyString())).thenReturn(anagramGet);
+        ResponseEntity expectedResponse = new ResponseEntity(anagramGet, HttpStatus.OK);
+        ResponseEntity actualResponse = anagramRestResource.fetchAnagramsOfGroupSize( "2" );
+        Assert.assertEquals(expectedResponse, actualResponse);
+    }
+
+    //Fetch Stats
+    @Test
+    public void shouldReturn200ResponseAndStatsInTheBody() {
         Stats stats = mock(Stats.class);
         when(statsService.calculateStats()).thenReturn(stats);
         ResponseEntity expectedResponse = new ResponseEntity(stats, HttpStatus.OK);
@@ -125,72 +176,21 @@ public class AnagramRestResourceTest {
     }
 
     @Test
-    public void shouldReturn200ResponseIfMostAnagramsDoesNotExist(){
-        List<String> list = new ArrayList<>();
-        AnagramGet anagramGet = new AnagramGet(list);
-        when(anagramService.fetchMostAnagramsWords()).thenReturn(anagramGet);
-        ResponseEntity expectedResponse = new ResponseEntity<>("Unexpected response code", HttpStatus.OK);
-        ResponseEntity actualResponse = anagramRestResource.fetchMostAnagramsWords();
-        assertEquals(expectedResponse, actualResponse);
-
-    }
-
-    @Test
-    public void shouldReturnResultInTheBodyResponseIfMostAnagramsExist(){
-        AnagramGet anagramGet = new AnagramGet();
-        anagramGet.setAnagrams(mock(List.class));
-        when(anagramService.fetchMostAnagramsWords()).thenReturn(anagramGet);
-        ResponseEntity expectedResponse = new ResponseEntity(anagramGet, HttpStatus.OK);
-        ResponseEntity actualResponse = anagramRestResource.fetchMostAnagramsWords();
-        Assert.assertEquals(expectedResponse, actualResponse);
-    }
-
-    @Test
-    public void shouldReturn200ResponseIfAnagramsOfGroupSizeDoesNotExist(){
-        List<String> list = new ArrayList<>();
-        AnagramGet anagramGet = new AnagramGet(list);
-        when(anagramService.fetchAnagramsOfGroupSize(anyInt())).thenReturn(anagramGet);
-        ResponseEntity expectedResponse = new ResponseEntity<>("Unexpected response code", HttpStatus.OK);
-        ResponseEntity actualResponse = anagramRestResource.fetchAnagramsOfGroupSize("2");
+    public void shouldReturn200ResponseIfStatsDoesNotExist() {
+        Stats stats = new Stats();
+        when(statsService.calculateStats()).thenReturn(stats);
+        ResponseEntity expectedResponse = new ResponseEntity(stats, HttpStatus.OK);
+        ResponseEntity actualResponse = anagramRestResource.fetchStats();
         assertEquals(expectedResponse, actualResponse);
     }
 
-    @Test
-    public void shouldReturnResultInTheBodyResponseIfAnagramsOfGroupSizeExist(){
-        AnagramGet anagramGet = new AnagramGet();
-        anagramGet.setAnagrams(mock(List.class));
-        when(anagramService.fetchAnagramsOfGroupSize(anyInt())).thenReturn(anagramGet);
-        ResponseEntity expectedResponse = new ResponseEntity(anagramGet, HttpStatus.OK);
-        ResponseEntity actualResponse = anagramRestResource.fetchAnagramsOfGroupSize( "2" );
-        Assert.assertEquals(expectedResponse, actualResponse);
-    }
-
-    //What to do for testing for Numeric Exception?
-    @Test
-    public void shouldReturn400ResponseIfAnagramsOfGroupSizeIsNotNumber(){//Pending to fix
-        List<String> list = new ArrayList<>();
-        AnagramGet anagramGet = new AnagramGet(list);
-        doThrow(new NumberFormatException()).when(anagramRestResource.fetchAnagramsOfGroupSize(anyString()));
-        //when(anagramRestResource.fetchAnagramsOfGroupSize(anyString())).(new NumberFormatException() );
-        ResponseEntity expectedResponse = new ResponseEntity<>("Unexpected response code", HttpStatus.BAD_REQUEST);
-        ResponseEntity actualResponse = anagramRestResource.fetchAnagramsOfGroupSize("not a number");
-        assertEquals(expectedResponse, actualResponse);
-    }
-
-    //What to do for testing DeleteALL()
-    @Test
-    public void shouldReturn204ResponseIfDeletedAll(){
-        when(anagramService.deleteAll()).thenReturn(true);
-        ResponseEntity expectedResponse = new ResponseEntity<>("Unexpected response code", HttpStatus.NO_CONTENT);
-        ResponseEntity actualResponse = anagramRestResource.deleteAll();
-        assertEquals(expectedResponse, actualResponse);
-    }
-    //What to do for testing DeleteALL()
+    //-------------------------------------------------------------------------------------------------------------------
+    //                                          DELETE
+    //-------------------------------------------------------------------------------------------------------------------
 
     @Test
-    public void shouldReturn500ResponseIfDeletedAll(){
-        when(anagramService.deleteAll()).thenReturn(false);
-        ResponseEntity expectedResponse = new ResponseEntity<>("Unexpected response code", HttpStatus.INTERNAL_SERVER_ERROR);
+    public void shouldReturn204ResponseWhenDeletedAll(){
+        ResponseEntity expectedResponse = new ResponseEntity<>("Deleted All Data successfully!", HttpStatus.NO_CONTENT);
         ResponseEntity actualResponse = anagramRestResource.deleteAll();
         assertEquals(expectedResponse, actualResponse);
     }
@@ -198,7 +198,7 @@ public class AnagramRestResourceTest {
     @Test
     public void shouldReturn204ResponseIfDeletedWordIsTrue(){
         when(anagramService.deleteWord(anyString())).thenReturn(true);
-        ResponseEntity expectedResponse = new ResponseEntity<>("Unexpected response code", HttpStatus.NO_CONTENT);
+        ResponseEntity expectedResponse = new ResponseEntity<>("The input word was successfully deleted", HttpStatus.NO_CONTENT);
         ResponseEntity actualResponse = anagramRestResource.deleteWord("A word");
         assertEquals(expectedResponse, actualResponse);
     }
@@ -206,7 +206,7 @@ public class AnagramRestResourceTest {
     @Test
     public void shouldReturn204ResponseIfDeletedWordIsFalse(){
         when(anagramService.deleteWord(anyString())).thenReturn(false);
-        ResponseEntity expectedResponse = new ResponseEntity<>("Unexpected response code", HttpStatus.BAD_REQUEST);
+        ResponseEntity expectedResponse = new ResponseEntity<>("Unable to delete the input word", HttpStatus.BAD_REQUEST);
         ResponseEntity actualResponse = anagramRestResource.deleteWord("A word");
         assertEquals(expectedResponse, actualResponse);
     }
@@ -214,7 +214,7 @@ public class AnagramRestResourceTest {
     @Test
     public void shouldReturn204ResponseIfDeletedAnagramsOfWordIsTrue(){
         when(anagramService.deleteAnagramsOfWord(anyString())).thenReturn(true);
-        ResponseEntity expectedResponse = new ResponseEntity<>("Unexpected response code", HttpStatus.NO_CONTENT);
+        ResponseEntity expectedResponse = new ResponseEntity<>("The anagrams of the input word were successfully deleted", HttpStatus.NO_CONTENT);
         ResponseEntity actualResponse = anagramRestResource.deleteAnagramsOfWord("A word");
         assertEquals(expectedResponse, actualResponse);
     }
@@ -222,7 +222,7 @@ public class AnagramRestResourceTest {
     @Test
     public void shouldReturn204ResponseIfDeletedAnagramsOfWordIsFalse(){
         when(anagramService.deleteAnagramsOfWord(anyString())).thenReturn(false);
-        ResponseEntity expectedResponse = new ResponseEntity<>("Unexpected response code", HttpStatus.BAD_REQUEST);
+        ResponseEntity expectedResponse = new ResponseEntity<>("Unable to delete the anagrams of the input word", HttpStatus.BAD_REQUEST);
         ResponseEntity actualResponse = anagramRestResource.deleteAnagramsOfWord("A word");
         assertEquals(expectedResponse, actualResponse);
     }
