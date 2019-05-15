@@ -12,17 +12,18 @@ public class StatsService {
     AnagramRepository anagramRepository;
 
     public Stats calculateStats (){
-        Stats stats = new Stats();
+        Stats stats = null;
+        if(anagramRepository.count() >0){//IF the table is not empty, calculate stats for that table
+            stats = new Stats();
+            stats.setAverageWordLength(anagramRepository.findLengthAverage());
+            stats.setMaxWordsLength(anagramRepository.findMaxLength());
+            stats.setMinWordsLength(anagramRepository.findMinLength());
 
-
-        stats.setAverageWordLength(anagramRepository.findLengthAverage());
-        stats.setMaxWordsLength(anagramRepository.findMaxLength());
-        stats.setMinWordsLength(anagramRepository.findMinLength());
-
-        Long totalRows =anagramRepository.count();
-        if(totalRows > 0) {
-            Long medianId= totalRows / 2;
-            stats.setMedianWordsLength(anagramRepository.findByIdOrderByLengthDesc(medianId).getLength());
+            Long totalRows =anagramRepository.count();
+            if(totalRows > 0) {
+                Long medianId= totalRows / 2;
+                stats.setMedianWordsLength(anagramRepository.findByIdOrderByLengthDesc(medianId).getLength());
+            }
         }
      return stats;
     }
