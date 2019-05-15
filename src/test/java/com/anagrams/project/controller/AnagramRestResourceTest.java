@@ -213,17 +213,17 @@ public class AnagramRestResourceTest {
 
     @Test
     public void shouldReturn204ResponseIfDeletedAnagramsOfWordIsTrue(){
-        when(anagramService.deleteWord(anyString())).thenReturn(true);
+        when(anagramService.deleteAnagramsOfWord(anyString())).thenReturn(true);
         ResponseEntity expectedResponse = new ResponseEntity<>("Unexpected response code", HttpStatus.NO_CONTENT);
-        ResponseEntity actualResponse = anagramRestResource.deleteWord("A word");
+        ResponseEntity actualResponse = anagramRestResource.deleteAnagramsOfWord("A word");
         assertEquals(expectedResponse, actualResponse);
     }
 
     @Test
     public void shouldReturn204ResponseIfDeletedAnagramsOfWordIsFalse(){
-        when(anagramService.deleteWord(anyString())).thenReturn(false);
+        when(anagramService.deleteAnagramsOfWord(anyString())).thenReturn(false);
         ResponseEntity expectedResponse = new ResponseEntity<>("Unexpected response code", HttpStatus.BAD_REQUEST);
-        ResponseEntity actualResponse = anagramRestResource.deleteWord("A word");
+        ResponseEntity actualResponse = anagramRestResource.deleteAnagramsOfWord("A word");
         assertEquals(expectedResponse, actualResponse);
     }
 
