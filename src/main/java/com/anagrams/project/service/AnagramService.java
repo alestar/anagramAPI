@@ -2,6 +2,7 @@ package com.anagrams.project.service;
 
 import com.anagrams.project.entity.Anagram;
 import com.anagrams.project.mapper.EntityMapper;
+import com.anagrams.project.model.AnagramGet;
 import com.anagrams.project.repository.AnagramRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
@@ -82,22 +83,22 @@ public class AnagramService {
      * @param limit used to determine how many words would be returned in result, if -1 or bigger than available words return ALL
      * @return Set of anagrams word if available, otherwise return NULL
      */
-    public List<String> fetchAnagramsOfWord(String word, int limit, boolean permitPN) {// limit resultSet
+    public AnagramGet fetchAnagramsOfWord(String word, int limit, boolean permitPN) {// limit resultSet
         logger.info("fetching anagram with limit = " + limit);
         logger.info("fetching anagram with permitPN = " + permitPN);
 
         List<String> result = new ArrayList<>();
         List<String> words;
         if (word == null || word.isEmpty() || limit < 0) //If the word is invalid or map is empty (i.e after deletion) short circuit exit
-            return result;
+            return new AnagramGet(result);
 
         Anagram anagram = anagramRepository.findByToken(generateAnagramToken(word));
         if(anagram == null)//No anagram found in the DB
-            return result;
+            return new AnagramGet(result);
 
         words = convertWordsToList(anagram.getWords());
         if (words.isEmpty())//If not words found for the word param, short circuit exit
-            return result;
+            return new AnagramGet(result);
 
         if (limit == 0 && permitPN) {//If no limit and Proper Noun are permitted,
             result.addAll(words);//Add all,
@@ -118,7 +119,9 @@ public class AnagramService {
                 }
             }
         }
-        return result;
+
+        AnagramGet anagramGet = new AnagramGet(result);
+        return anagramGet;
     }
 
     /**
@@ -126,9 +129,9 @@ public class AnagramService {
      *
      * @return Set of words with most anagrams
      */
-    public List<String> fetchMostAnagramsWords() {
+    public AnagramGet fetchMostAnagramsWords() {
         String words = anagramRepository.getMaxVolume();
-        return convertWordsToList(words);
+        return new AnagramGet(convertWordsToList(words));
     }
 
     /**

@@ -1,11 +1,17 @@
 package com.anagrams.project.model;
 
 
+import com.google.gson.annotations.SerializedName;
+
 public class Stats implements Comparable<Stats> {
 
+    @SerializedName("minWordsLength")
     private int minWordsLength;
+    @SerializedName("maxWordsLength")
     private int maxWordsLength;
+    @SerializedName("medianWordsLength")
     private int medianWordsLength;
+    @SerializedName("averageWordLength")
     private int averageWordLength;
 
     public Stats() {

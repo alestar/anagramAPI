@@ -40,18 +40,12 @@ public class AnagramRestResource {
 
     @PostMapping("/anagrams/words.json")
     public @ResponseBody ResponseEntity<String> areAnagrams(@RequestBody AnagramPost anagramPost){
-
-        try {
             if(anagramService.areAnagrams(anagramPost.getWords())){
                 return new ResponseEntity<>("This words are Anagrams between each others!", HttpStatus.OK);
             }
             else {
-                return new ResponseEntity<>("This words are not anagrams", HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>("This words are not anagrams", HttpStatus.OK);
             }
-        }
-        catch (Exception e){
-            return new ResponseEntity<>(e.getMessage(),HttpStatus.BAD_REQUEST);
-        }
     }
 
     @PostMapping("/words.json")
@@ -68,22 +62,20 @@ public class AnagramRestResource {
     }
 
     @GetMapping("/anagrams/{word}.json")
-    public @ResponseBody ResponseEntity<String> fetchAnagramsOfWord(@PathVariable(value = "word") String word, @RequestParam(defaultValue="0", required = false) Integer limit,
+    public @ResponseBody ResponseEntity fetchAnagramsOfWord(@PathVariable(value = "word") String word, @RequestParam(defaultValue="0", required = false) Integer limit,
                                                                     @RequestParam (defaultValue="true", required = false)Boolean permitPN){
-        List<String> result = anagramService.fetchAnagramsOfWord(word, limit, permitPN);//Return All
+        AnagramGet anagramGet = anagramService.fetchAnagramsOfWord(word, limit, permitPN);
 
-        if(result == null) {
+        if(anagramGet.getAnagrams().isEmpty()) {
             return new ResponseEntity<>("Unexpected response code", HttpStatus.OK);
         }
         else {
-            Gson gson = new Gson();
-            AnagramGet anagramGet =  new AnagramGet(result);
-            return new ResponseEntity<>(gson.toJson(anagramGet), HttpStatus.OK);
+            return new ResponseEntity<>(anagramGet, HttpStatus.OK);
         }
     }
 
     @GetMapping("/stats/words.json")
-    public @ResponseBody ResponseEntity<String> fetchStats(){
+    public @ResponseBody ResponseEntity fetchStats(){
 
         Stats stats = statsService.calculateStats();
 
@@ -91,15 +83,19 @@ public class AnagramRestResource {
             return new ResponseEntity<>("Unexpected response code", HttpStatus.NO_CONTENT);
         }
         else {
-            Gson gson = new Gson();
-            return new ResponseEntity<>(gson.toJson(stats), HttpStatus.OK);
+            return new ResponseEntity<>(stats, HttpStatus.OK);
         }
     }
 
     @GetMapping("/most/words.json")
-    public @ResponseBody ResponseEntity<String> fetchMostAnagramsWords(){
-        List<String> result=anagramService.fetchMostAnagramsWords();
-        return createResponseEntity(result);
+    public @ResponseBody ResponseEntity fetchMostAnagramsWords(){
+        AnagramGet anagramGet = anagramService.fetchMostAnagramsWords();
+        if(anagramGet.getAnagrams().isEmpty()) {
+            return new ResponseEntity<>("Unexpected response code", HttpStatus.OK);
+        }
+        else {
+            return new ResponseEntity<>(anagramGet, HttpStatus.OK);
+        }
     }
 
     @GetMapping("/anagrams/size.json")
