@@ -262,7 +262,7 @@ public class AnagramServiceTest {
     }
 
     @Test
-    public void deleteALL() {
+    public void deleteAll() {
         try {
             List<String> combineList = new ArrayList<>();
             combineList.addAll(testWordsList4);
@@ -270,7 +270,7 @@ public class AnagramServiceTest {
             testAnagramService = new AnagramService();
             testAnagramService.populateDatabase(combineList);//Add anagrams
             assertEquals(testWordsSet4,testAnagramService.getTokenToWordsMap().get(TOKEN_FOR_LENGTH_4));//Make sure the map is filled
-            testAnagramService.deleteALL();// Clear Maps and Stats
+            testAnagramService.deleteAll();// Clear Maps and Stats
             assertTrue(testAnagramService.getTokenToWordsMap().isEmpty());//Make sure both maps are empty
             assertTrue(testAnagramService.getLengthToTokensMap().isEmpty());
 
