@@ -208,7 +208,7 @@ public class AnagramService {
      * Endpoint to delete a word and all of its anagrams     *
      * @param word to delete all anagrams from
      */
-    public boolean deleteAllAnagramsOfWord(String word) {
+    public boolean deleteAnagramsOfWord(String word) {
         String token = generateAnagramToken(word);
         Long result = anagramRepository.removeAnagramByToken(token);
         return result!=null;
