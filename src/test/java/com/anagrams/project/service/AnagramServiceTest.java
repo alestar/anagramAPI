@@ -218,16 +218,16 @@ public class AnagramServiceTest {
     }
 
     @Test
-    public void fetchAnagramGroupOfSize() {
+    public void fetchAnagramsOfGroupSize() {
         try {
             List<String> combineList = new ArrayList<>();
             combineList.addAll(testWordsList4);
             combineList.addAll(testWordsList5);
             testAnagramService = new AnagramService();
             testAnagramService.populateDatabase(combineList);
-            assertEquals(testWordsSet4,testAnagramService.fetchAnagramGroupOfSize(4));
-            assertEquals(testWordsSet5,testAnagramService.fetchAnagramGroupOfSize(5));
-            assertEquals(new HashSet<>(),testAnagramService.fetchAnagramGroupOfSize(0));
+            assertEquals(testWordsSet4,testAnagramService.fetchAnagramsOfGroupSize(4));
+            assertEquals(testWordsSet5,testAnagramService.fetchAnagramsOfGroupSize(5));
+            assertEquals(new HashSet<>(),testAnagramService.fetchAnagramsOfGroupSize(0));
         } catch (Exception e) {
             e.printStackTrace();
         }
