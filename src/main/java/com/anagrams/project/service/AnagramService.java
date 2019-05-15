@@ -1,9 +1,9 @@
 package com.anagrams.project.service;
 
 import com.anagrams.project.entity.Anagram;
-import com.anagrams.project.exception.IncorrectAnagramException;
 import com.anagrams.project.mapper.EntityMapper;
 import com.anagrams.project.repository.AnagramRepository;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -40,31 +40,37 @@ public class AnagramService {
     /**
      * (POST /words.json: Takes a JSON array of English-language words and adds them to the corpus (data store).
      * @param words to be added to respective anagrams in data tore
-     * @throws IncorrectAnagramException for word not being a valid input
      */
-    public boolean addWordsAsAnagram(List<String> words) throws IncorrectAnagramException {
+    public boolean addWordsAsAnagram(List<String> words) {
         boolean added = false;
 
         for (String word : words) {
-            if (Strings.isBlank(word)) {
-                throw new IncorrectAnagramException();
+            if (Strings.isBlank(word)|| StringUtils.isNumeric(word)) {
+                return false;
             }
             String token = generateAnagramToken(word);
             Anagram anagram = anagramRepository.findByToken(token);
 
             if (anagram != null) {
-                Set<String> wordList = new HashSet<>(Arrays.asList(anagram.getWords().split(", ")));
-                if (wordList.contains(word)) {
+/*                Set<String> wordSet = new HashSet<>();
+                StringTokenizer st = new StringTokenizer(anagram.getWords(), ", ");
+                while(st.hasMoreTokens())
+                    wordSet.add(st.nextToken());*/
+                Set<String> wordSet = Arrays.stream(anagram.getWords().split(", ")).collect(Collectors.toSet());
+                //Set<String> wordSet = new HashSet<>(Arrays.asList(anagram.getWords().split(", ")));
+                if (wordSet.contains(word)) {
                     added = false;
                 } else {
-                    wordList.add(word);
-                    anagram.setWords(wordList.toString());
+                    wordSet.add(word);
+                    anagram.setWords(wordSet.toString());
                 }
             } else {
                 anagram = new Anagram();
                 anagram.setLength(word.length());
                 anagram.setToken(token);
-                anagram.setWords(Collections.singletonList(word).toString());
+                Set<String> wordSet = new HashSet<>();
+                //anagram.setWords(Collections.singletonList(word).toString());
+                anagram.setWords(word);
                 added = true;
             }
             anagramRepository.save(anagram);
@@ -97,7 +103,7 @@ public class AnagramService {
             return result;
 
         words = convertWordsToList(anagram.getWords());
-        if (words == null || words.isEmpty())//If not words found for the word param, short circuit exit
+        if (words.isEmpty())//If not words found for the word param, short circuit exit
             return result;
 
         if (limit == 0 && permitPN) {//If no limit and Proper Noun are permitted,
@@ -129,8 +135,7 @@ public class AnagramService {
      */
     public List<String> fetchMostAnagramsWords() {
         String words = anagramRepository.getMaxVolume();
-        List<String> list = convertWordsToList(words);
-        return list;
+        return convertWordsToList(words);
     }
 
     /**
@@ -140,8 +145,7 @@ public class AnagramService {
      */
     public List<String> fetchAnagramGroupOfSize(int size) {
         List<Anagram> anagramList = anagramRepository.findAllByLengthGreaterThanEqual(size);
-        List<String> words = anagramList.stream().map(Anagram::getWords).collect(Collectors.toList());
-        return words;
+        return anagramList.stream().map(Anagram::getWords).collect(Collectors.toList());
     }
 
     /**
@@ -166,8 +170,16 @@ public class AnagramService {
     /**
      * Delete ALL information in maps     *
      */
-    public void deleteALL() {
-        anagramRepository.deleteAll();
+    public boolean deleteAll() {
+        boolean success;
+        try {
+            anagramRepository.deleteAll();
+            success= true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            success= false;
+        }
+        return success;
     }
 
     /**
@@ -199,7 +211,7 @@ public class AnagramService {
     public boolean deleteAllAnagramsOfWord(String word) {
         String token = generateAnagramToken(word);
         Long result = anagramRepository.removeAnagramByToken(token);
-        return result!=null?true:false;
+        return result!=null;
     }
 
     //-------------------------------------------------------------------------------------------------------------------
